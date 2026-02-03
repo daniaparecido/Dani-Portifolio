@@ -5,7 +5,7 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-02-03 18:19
+ * Last updated: 2026-02-03 18:28
  */
 
 const projects = [
@@ -44,5 +44,14 @@ const projects = [
         viewCount: "910K views",
         thumbnail: "",
         previewVideo: "videos/previews/rRG71DuPDds.mp4"
+    },
+    {
+        title: "LOUD CAMPEÃ DO VALORANT E LOL!!! - Thaigão News",
+        category: "long-form",
+        youtubeId: "gVQEYRTtm68",
+        channelName: "Thaiga",
+        viewCount: "13K views",
+        thumbnail: "",
+        previewVideo: "videos/previews/gVQEYRTtm68.mp4"
     },
 ];
