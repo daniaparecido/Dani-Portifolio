@@ -37,6 +37,13 @@
     }
 
     /**
+     * Get YouTube embed URL for hover preview (muted, no controls)
+     */
+    function getYouTubePreviewUrl(youtubeId) {
+        return `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${youtubeId}&modestbranding=1&playsinline=1&enablejsapi=1`;
+    }
+
+    /**
      * Format category for display
      */
     function formatCategory(category) {
@@ -61,6 +68,7 @@
         item.innerHTML = `
             <img src="${thumbnailUrl}" alt="${project.title}" loading="lazy"
                  onerror="this.src='https://img.youtube.com/vi/${project.youtubeId}/hqdefault.jpg'">
+            <div class="grid-item-preview"></div>
             <div class="play-icon">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M8 5v14l11-7z"/>
@@ -74,6 +82,32 @@
 
         // Click handler to open lightbox
         item.addEventListener('click', () => openLightbox(project.youtubeId));
+
+        // Hover preview handlers (desktop only)
+        let hoverTimeout;
+        const previewContainer = item.querySelector('.grid-item-preview');
+
+        item.addEventListener('mouseenter', () => {
+            // Delay before loading preview (like YouTube)
+            hoverTimeout = setTimeout(() => {
+                const previewUrl = getYouTubePreviewUrl(project.youtubeId);
+                previewContainer.innerHTML = `
+                    <iframe
+                        src="${previewUrl}"
+                        title="Video preview"
+                        allow="autoplay; encrypted-media"
+                        loading="lazy">
+                    </iframe>
+                `;
+                item.classList.add('preview-active');
+            }, 500);
+        });
+
+        item.addEventListener('mouseleave', () => {
+            clearTimeout(hoverTimeout);
+            item.classList.remove('preview-active');
+            previewContainer.innerHTML = '';
+        });
 
         return item;
     }
