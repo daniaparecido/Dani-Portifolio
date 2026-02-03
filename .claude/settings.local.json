@@ -7,7 +7,9 @@
       "Bash(tree:*)",
       "Bash(printf '@echo off\\\\r\\\\npowershell -ExecutionPolicy Bypass -File \"\"%%~dp0process-videos.ps1\"\" %%*\\\\r\\\\n')",
       "Bash(yt-dlp:*)",
-      "Bash(powershell -ExecutionPolicy Bypass -File scripts/process-videos.ps1 -All DW3F1OHfZeo)"
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/process-videos.ps1 -All DW3F1OHfZeo)",
+      "Bash(printf:*)",
+      "Bash(copy \"H:\\\\_AI Related\\\\Agents\\\\GSheet Video Tracker\\\\_key\\\\sunny-effort-485915-j5-eacb7955ea78.json\" \"H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\_key\"\")"
     ]
   }
 }

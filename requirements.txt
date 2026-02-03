@@ -1,0 +1,7 @@
+# Google APIs
+google-api-python-client>=2.100.0
+google-auth>=2.23.0
+gspread>=5.12.0
+
+# Environment variables
+python-dotenv>=1.0.0

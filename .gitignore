@@ -4,6 +4,18 @@ videos/source/
 # Cookies file (sensitive)
 cookies.txt
 
+# Environment variables (sensitive)
+.env
+
+# Google Service Account credentials (sensitive)
+_key/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
 # OS generated files
 .DS_Store
 Thumbs.db
