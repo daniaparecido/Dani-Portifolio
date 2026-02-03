@@ -5,7 +5,7 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-02-03 18:17
+ * Last updated: 2026-02-03 18:22
  */
 
 const projects = [
@@ -26,5 +26,23 @@ const projects = [
         viewCount: "89K views",
         thumbnail: "",
         previewVideo: "videos/previews/KZYFvgajyPE.mp4"
+    },
+    {
+        title: "Adeus Windows! Bem-vindo Linux!",
+        category: "long-form",
+        youtubeId: "TZfM1yfkFn4",
+        channelName: "Coisa de Nerd",
+        viewCount: "991K views",
+        thumbnail: "",
+        previewVideo: "videos/previews/TZfM1yfkFn4.mp4"
+    },
+    {
+        title: "20 ANOS DE YOUTUBE! - Os melhores vídeos da história",
+        category: "long-form",
+        youtubeId: "rRG71DuPDds",
+        channelName: "República Coisa de Nerd",
+        viewCount: "910K views",
+        thumbnail: "",
+        previewVideo: "videos/previews/rRG71DuPDds.mp4"
     },
 ];
