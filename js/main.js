@@ -3,6 +3,7 @@
  * PORTFOLIO MAIN JAVASCRIPT
  * ============================================
  * Handles: Grid generation, filtering, lightbox, hover previews
+ * Supports: YouTube, Instagram, TikTok
  */
 
 (function() {
@@ -23,31 +24,51 @@
     // ============================================
 
     /**
-     * Get YouTube thumbnail URL from video ID
+     * Get thumbnail URL based on platform
      */
-    function getYouTubeThumbnail(youtubeId) {
-        return `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
+    function getThumbnailUrl(project) {
+        const videoId = project.videoId || project.youtubeId;
+        const platform = project.platform || 'youtube';
+
+        // For Instagram/TikTok, use local thumbnail
+        if (platform === 'instagram' || platform === 'tiktok') {
+            return `images/thumbnails/${videoId}.jpg`;
+        }
+
+        // YouTube: use their CDN
+        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    }
+
+    /**
+     * Get fallback thumbnail URL (lower quality)
+     */
+    function getFallbackThumbnail(project) {
+        const videoId = project.videoId || project.youtubeId;
+        if (project.platform === 'youtube' || !project.platform) {
+            return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        }
+        return '';
     }
 
     /**
      * Get YouTube embed URL for lightbox (with sound)
      */
-    function getYouTubeEmbedUrl(youtubeId) {
-        return `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`;
+    function getYouTubeEmbedUrl(videoId) {
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
     }
 
     /**
      * Get YouTube embed URL for hover preview (muted, no controls)
      */
-    function getYouTubePreviewUrl(youtubeId) {
-        return `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${youtubeId}&modestbranding=1&playsinline=1&enablejsapi=1`;
+    function getYouTubePreviewUrl(videoId) {
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${videoId}&modestbranding=1&playsinline=1&enablejsapi=1`;
     }
 
     /**
-     * Format category for display
+     * Check if project has a local preview video available
      */
-    function formatCategory(category) {
-        return category.replace('-', ' ').toUpperCase();
+    function hasLocalPreview(project) {
+        return !!project.previewVideo;
     }
 
     // ============================================
@@ -59,38 +80,48 @@
      */
     function createGridItem(project) {
         const item = document.createElement('div');
-        item.className = 'grid-item' + (project.previewVideo ? ' has-preview' : '');
-        item.dataset.category = project.category;
-        item.dataset.youtubeId = project.youtubeId;
+        const videoId = project.videoId || project.youtubeId;
+        const platform = project.platform || 'youtube';
+        const canPreview = hasLocalPreview(project) || platform === 'youtube';
+        const isVertical = platform === 'instagram' || platform === 'tiktok';
 
-        const thumbnailUrl = project.thumbnail || getYouTubeThumbnail(project.youtubeId);
+        item.className = 'grid-item' + (canPreview ? ' has-preview' : '') + (isVertical ? ' vertical-item' : '');
+        item.dataset.category = project.category;
+        item.dataset.videoId = videoId;
+        item.dataset.platform = platform;
+
+        const thumbnailUrl = getThumbnailUrl(project);
+        const fallbackUrl = getFallbackThumbnail(project);
 
         item.innerHTML = `
             <img src="${thumbnailUrl}" alt="${project.title}" loading="lazy"
-                 onerror="this.src='https://img.youtube.com/vi/${project.youtubeId}/hqdefault.jpg'">
+                 ${fallbackUrl ? `onerror="this.src='${fallbackUrl}'"` : ''}>
             <div class="grid-item-preview"></div>
-            <div class="play-icon">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z"/>
-                </svg>
-            </div>
             <div class="grid-item-overlay">
                 <h3 class="grid-item-title">${project.title}</h3>
                 <span class="grid-item-meta">${project.channelName || ''} ${project.channelName && project.viewCount ? '·' : ''} ${project.viewCount || ''}</span>
             </div>
         `;
 
-        // Click handler to open lightbox
-        item.addEventListener('click', () => openLightbox(project.youtubeId));
+        // Click handler - YouTube opens lightbox, others open in new tab
+        item.addEventListener('click', () => {
+            if (platform === 'youtube') {
+                openLightbox(videoId);
+            } else if (project.url) {
+                window.open(project.url, '_blank');
+            }
+        });
 
         // Hover preview handlers (desktop only)
         let hoverTimeout;
         const previewContainer = item.querySelector('.grid-item-preview');
 
         item.addEventListener('mouseenter', () => {
+            if (!canPreview) return;
+
             // Delay before loading preview (like YouTube)
             hoverTimeout = setTimeout(() => {
-                if (project.previewVideo) {
+                if (hasLocalPreview(project)) {
                     // Use local video file for preview
                     previewContainer.innerHTML = `
                         <video
@@ -102,9 +133,9 @@
                             preload="none">
                         </video>
                     `;
-                } else {
+                } else if (platform === 'youtube') {
                     // Fallback to YouTube iframe
-                    const previewUrl = getYouTubePreviewUrl(project.youtubeId);
+                    const previewUrl = getYouTubePreviewUrl(videoId);
                     previewContainer.innerHTML = `
                         <iframe
                             src="${previewUrl}"
@@ -196,10 +227,10 @@
     /**
      * Open the lightbox with a YouTube video
      */
-    function openLightbox(youtubeId) {
+    function openLightbox(videoId) {
         if (!lightbox || !videoContainer) return;
 
-        const embedUrl = getYouTubeEmbedUrl(youtubeId);
+        const embedUrl = getYouTubeEmbedUrl(videoId);
 
         videoContainer.innerHTML = `
             <iframe

@@ -20,6 +20,9 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Windows reserved filenames (accidentally created)
+nul
+
 # IDE files
 .idea/
 .vscode/

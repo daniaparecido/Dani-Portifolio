@@ -374,6 +374,17 @@ button {
 }
 
 /* ========================================
+   Vertical Video Grid Items (Instagram/TikTok)
+   ======================================== */
+.grid-item.vertical-item {
+    aspect-ratio: 9 / 16;
+}
+
+.grid-item.vertical-item .grid-item-overlay {
+    background: linear-gradient(transparent 60%, rgba(0, 0, 0, 0.9));
+}
+
+/* ========================================
    Footer
    ======================================== */
 .footer {

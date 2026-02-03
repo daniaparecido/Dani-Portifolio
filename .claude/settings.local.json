@@ -9,7 +9,20 @@
       "Bash(yt-dlp:*)",
       "Bash(powershell -ExecutionPolicy Bypass -File scripts/process-videos.ps1 -All DW3F1OHfZeo)",
       "Bash(printf:*)",
-      "Bash(copy \"H:\\\\_AI Related\\\\Agents\\\\GSheet Video Tracker\\\\_key\\\\sunny-effort-485915-j5-eacb7955ea78.json\" \"H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\_key\"\")"
+      "Bash(copy \"H:\\\\_AI Related\\\\Agents\\\\GSheet Video Tracker\\\\_key\\\\sunny-effort-485915-j5-eacb7955ea78.json\" \"H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\_key\"\")",
+      "Bash(python scripts/sync_from_sheet.py:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m pip install:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/process-videos.ps1 -Url \"https://www.instagram.com/p/C-6GOVvv96_/\")",
+      "Bash(ls -la \"H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\images\\\\thumbnails\"\" && ls -la \"H:_AI RelatedAgentsDani PortifoliovideospreviewsC-6GOVvv96_.mp4 \")",
+      "Bash(dir /b \"H:\\\\_AI Related\\\\Agents\\\\GSheet Video Tracker\\\\tiktok\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/process-videos.ps1 -Url \"https://www.tiktok.com/@teamliquidbr/video/7491305946581339397\")",
+      "Bash(git config:*)",
+      "Bash(del \"\\\\?\\\\H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\nul\")",
+      "Bash(powershell -Command \"Remove-Item -Path ''\\\\?\\\\H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\nul'' -Force\")",
+      "Bash(cmd /c \"del /f /q \"\"H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\nul\"\"\")",
+      "Bash(cmd /c \"del \"\"\\\\?\\\\H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\nul\"\"\")",
+      "Bash(powershell -Command \"cmd /c ''pushd \"\"H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\"\" && del nul && popd''\")"
     ]
   }
 }
