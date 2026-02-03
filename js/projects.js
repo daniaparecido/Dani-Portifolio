@@ -5,7 +5,7 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-02-03 17:41
+ * Last updated: 2026-02-03 17:52
  */
 
 const projects = [
