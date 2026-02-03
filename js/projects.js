@@ -5,7 +5,11 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
+<<<<<<< HEAD
  * Last updated: 2026-02-03 19:27
+=======
+ * Last updated: 2026-02-03 18:22
+>>>>>>> ab2a0430d3ce84eeb259ab5ec1f9707d8fa3f3b9
  */
 
 const projects = [
@@ -34,17 +38,25 @@ const projects = [
     {
         title: "Adeus Windows! Bem-vindo Linux!",
         category: "long-form",
+<<<<<<< HEAD
         videoId: "TZfM1yfkFn4",
         platform: "youtube",
         channelName: "Coisa de Nerd",
         viewCount: "991K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=TZfM1yfkFn4",
+=======
+        youtubeId: "TZfM1yfkFn4",
+        channelName: "Coisa de Nerd",
+        viewCount: "991K views",
+        thumbnail: "",
+>>>>>>> ab2a0430d3ce84eeb259ab5ec1f9707d8fa3f3b9
         previewVideo: "videos/previews/TZfM1yfkFn4.mp4"
     },
     {
         title: "20 ANOS DE YOUTUBE! - Os melhores vídeos da história",
         category: "long-form",
+<<<<<<< HEAD
         videoId: "rRG71DuPDds",
         platform: "youtube",
         channelName: "República Coisa de Nerd",
@@ -130,4 +142,12 @@ const projects = [
         url: "https://www.instagram.com/p/C71usvjJhMM/",
         previewVideo: "videos/previews/C71usvjJhMM.mp4"
     },
+=======
+        youtubeId: "rRG71DuPDds",
+        channelName: "República Coisa de Nerd",
+        viewCount: "910K views",
+        thumbnail: "",
+        previewVideo: "videos/previews/rRG71DuPDds.mp4"
+    },
+>>>>>>> ab2a0430d3ce84eeb259ab5ec1f9707d8fa3f3b9
 ];
