@@ -3,7 +3,11 @@
     "allow": [
       "WebFetch(domain:www.kylefallon.com)",
       "Bash(copy \"H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\dani logo.png\" \"H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\images\\\\logo.png\")",
-      "Bash(npx skills:*)"
+      "Bash(npx skills:*)",
+      "Bash(tree:*)",
+      "Bash(printf '@echo off\\\\r\\\\npowershell -ExecutionPolicy Bypass -File \"\"%%~dp0process-videos.ps1\"\" %%*\\\\r\\\\n')",
+      "Bash(yt-dlp:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/process-videos.ps1 -All DW3F1OHfZeo)"
     ]
   }
 }

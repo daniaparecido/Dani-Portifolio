@@ -59,7 +59,7 @@
      */
     function createGridItem(project) {
         const item = document.createElement('div');
-        item.className = 'grid-item';
+        item.className = 'grid-item' + (project.previewVideo ? ' has-preview' : '');
         item.dataset.category = project.category;
         item.dataset.youtubeId = project.youtubeId;
 
@@ -76,7 +76,7 @@
             </div>
             <div class="grid-item-overlay">
                 <h3 class="grid-item-title">${project.title}</h3>
-                <span class="grid-item-category">${formatCategory(project.category)}</span>
+                <span class="grid-item-meta">${project.channelName || ''} ${project.channelName && project.viewCount ? '·' : ''} ${project.viewCount || ''}</span>
             </div>
         `;
 
@@ -90,15 +90,30 @@
         item.addEventListener('mouseenter', () => {
             // Delay before loading preview (like YouTube)
             hoverTimeout = setTimeout(() => {
-                const previewUrl = getYouTubePreviewUrl(project.youtubeId);
-                previewContainer.innerHTML = `
-                    <iframe
-                        src="${previewUrl}"
-                        title="Video preview"
-                        allow="autoplay; encrypted-media"
-                        loading="lazy">
-                    </iframe>
-                `;
+                if (project.previewVideo) {
+                    // Use local video file for preview
+                    previewContainer.innerHTML = `
+                        <video
+                            src="${project.previewVideo}"
+                            autoplay
+                            muted
+                            loop
+                            playsinline
+                            preload="none">
+                        </video>
+                    `;
+                } else {
+                    // Fallback to YouTube iframe
+                    const previewUrl = getYouTubePreviewUrl(project.youtubeId);
+                    previewContainer.innerHTML = `
+                        <iframe
+                            src="${previewUrl}"
+                            title="Video preview"
+                            allow="autoplay; encrypted-media"
+                            loading="lazy">
+                        </iframe>
+                    `;
+                }
                 item.classList.add('preview-active');
             }, 500);
         });
@@ -106,6 +121,13 @@
         item.addEventListener('mouseleave', () => {
             clearTimeout(hoverTimeout);
             item.classList.remove('preview-active');
+            // Clean up video to release memory
+            const video = previewContainer.querySelector('video');
+            if (video) {
+                video.pause();
+                video.src = '';
+                video.load();
+            }
             previewContainer.innerHTML = '';
         });
 
