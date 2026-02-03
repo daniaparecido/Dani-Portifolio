@@ -1,0 +1,504 @@
+/* ========================================
+   CSS Reset & Base Styles
+   ======================================== */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #000000;
+    color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.5;
+}
+
+a {
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: #888888;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+ul {
+    list-style: none;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+/* ========================================
+   Header
+   ======================================== */
+.header {
+    padding: 40px 40px 20px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.logo-link {
+    display: block;
+    flex-shrink: 0;
+}
+
+.logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.site-title {
+    font-size: 24px;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+}
+
+.site-subtitle {
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: #888888;
+}
+
+/* ========================================
+   Navigation
+   ======================================== */
+.nav {
+    padding: 20px 40px;
+    border-bottom: 1px solid #222222;
+}
+
+.nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.nav-link {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888888;
+    transition: color 0.2s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: #ffffff;
+}
+
+/* ========================================
+   Main Content
+   ======================================== */
+.main {
+    flex: 1;
+    padding: 40px;
+}
+
+/* ========================================
+   Project Grid
+   ======================================== */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.grid-item {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: #111111;
+}
+
+.grid-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.grid-item:hover img {
+    transform: scale(1.05);
+    filter: brightness(0.6);
+}
+
+/* Play Icon */
+.play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 1;
+}
+
+.play-icon svg {
+    width: 30px;
+    height: 30px;
+    color: #000000;
+    margin-left: 4px;
+}
+
+.grid-item:hover .play-icon {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.grid-item-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+}
+
+.grid-item:hover .grid-item-overlay {
+    opacity: 1;
+}
+
+.grid-item-title {
+    font-size: 16px;
+    font-weight: 400;
+    margin-bottom: 4px;
+}
+
+.grid-item-category {
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #888888;
+}
+
+/* ========================================
+   Lightbox Modal
+   ======================================== */
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.95);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.lightbox.active {
+    display: flex;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 40px;
+    color: #ffffff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 1001;
+    transition: color 0.2s ease;
+    line-height: 1;
+}
+
+.lightbox-close:hover {
+    color: #888888;
+}
+
+.lightbox-content {
+    width: 90%;
+    max-width: 1200px;
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    background-color: #000000;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* ========================================
+   Footer
+   ======================================== */
+.footer {
+    padding: 30px 40px;
+    border-top: 1px solid #222222;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.footer-link {
+    font-size: 14px;
+    color: #888888;
+    transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+    color: #ffffff;
+}
+
+.footer-divider {
+    color: #333333;
+}
+
+/* ========================================
+   About Page
+   ======================================== */
+.about-main {
+    display: flex;
+    justify-content: center;
+}
+
+.about-content {
+    max-width: 700px;
+    width: 100%;
+}
+
+.about-heading {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    margin-bottom: 40px;
+    color: #888888;
+}
+
+.about-bio {
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 1.8;
+    margin-bottom: 24px;
+    color: #cccccc;
+}
+
+.about-contact {
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 1px solid #222222;
+}
+
+.contact-heading {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    margin-bottom: 20px;
+    color: #888888;
+}
+
+.contact-item {
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.contact-item a {
+    color: #cccccc;
+}
+
+.contact-item a:hover {
+    color: #ffffff;
+}
+
+/* ========================================
+   Responsive Design - Tablet
+   ======================================== */
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .header {
+        padding: 30px 30px 15px;
+    }
+
+    .nav {
+        padding: 15px 30px;
+    }
+
+    .main {
+        padding: 30px;
+    }
+
+    .footer {
+        padding: 25px 30px;
+    }
+}
+
+/* ========================================
+   Responsive Design - Mobile
+   ======================================== */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header {
+        padding: 20px 20px 10px;
+    }
+
+    .header-content {
+        gap: 15px;
+    }
+
+    .logo {
+        width: 50px;
+        height: 50px;
+    }
+
+    .site-title {
+        font-size: 18px;
+        letter-spacing: 0.15em;
+    }
+
+    .site-subtitle {
+        font-size: 10px;
+    }
+
+    .nav {
+        padding: 15px 20px;
+    }
+
+    .nav-list {
+        gap: 15px 20px;
+    }
+
+    .nav-link {
+        font-size: 12px;
+    }
+
+    .main {
+        padding: 20px;
+    }
+
+    .grid {
+        gap: 15px;
+    }
+
+    /* Show overlay and play icon on mobile since no hover */
+    .grid-item-overlay {
+        opacity: 1;
+    }
+
+    .play-icon {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        width: 60px;
+        height: 60px;
+    }
+
+    .play-icon svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .lightbox-close {
+        top: 15px;
+        right: 20px;
+        font-size: 32px;
+    }
+
+    .lightbox-content {
+        width: 95%;
+    }
+
+    .footer {
+        padding: 20px;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .footer-divider {
+        display: none;
+    }
+
+    .about-bio {
+        font-size: 16px;
+    }
+
+    .about-contact {
+        margin-top: 40px;
+        padding-top: 30px;
+    }
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+.hidden {
+    display: none !important;
+}
+
+/* Loading state for images */
+.grid-item img.loading {
+    opacity: 0;
+}
+
+.grid-item img.loaded {
+    opacity: 1;
+}

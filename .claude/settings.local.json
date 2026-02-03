@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.kylefallon.com)",
+      "Bash(copy \"H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\dani logo.png\" \"H:\\\\_AI Related\\\\Agents\\\\Dani Portifolio\\\\images\\\\logo.png\")"
+    ]
+  }
+}
