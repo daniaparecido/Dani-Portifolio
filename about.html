@@ -7,64 +7,80 @@
     <title>About | Daniel Aparecido</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <header class="header">
-        <div class="header-content">
-            <a href="index.html" class="logo-link">
-                <img src="images/logo.png" alt="Daniel Aparecido Logo" class="logo">
-            </a>
-            <div class="header-text">
-                <h1 class="site-title">Daniel Aparecido</h1>
-                <p class="site-subtitle">Video Editor and Motion Designer</p>
-            </div>
-        </div>
-    </header>
-
+    <!-- Fixed Navigation -->
     <nav class="nav">
+        <a href="index.html" class="nav-logo">DA</a>
         <ul class="nav-list">
-            <li><a href="index.html" class="nav-link">Long-form</a></li>
-            <li><a href="index.html#short-form" class="nav-link">Short-form</a></li>
-            <li><a href="index.html#motion-design" class="nav-link">Motion Design</a></li>
+            <li><a href="index.html#work" class="nav-link">Work</a></li>
             <li><a href="about.html" class="nav-link active">About</a></li>
         </ul>
     </nav>
 
-    <main class="main about-main">
-        <div class="about-content">
-            <div class="about-text">
-                <h2 class="about-heading">ABOUT</h2>
-                <p class="about-bio">
-                    I'm Daniel Aparecido, a video editor and motion designer passionate about bringing stories to life through visual storytelling.
-                </p>
-                <p class="about-bio">
-                    With experience in long-form content, short-form videos, and motion design, I help creators and brands craft compelling visual narratives that engage and inspire their audiences.
-                </p>
-                <p class="about-bio">
-                    Whether it's a YouTube video, social media content, or dynamic motion graphics, I bring creativity and technical expertise to every project.
-                </p>
+    <!-- About Hero -->
+    <section class="about-hero">
+        <div class="about-hero-content">
+            <p class="about-label">The Story</p>
+            <h1 class="about-title">About Me</h1>
+        </div>
+    </section>
 
-                <div class="about-contact">
-                    <h3 class="contact-heading">GET IN TOUCH</h3>
-                    <p class="contact-item">
-                        <a href="mailto:daniaparecidocontato@gmail.com">daniaparecidocontato@gmail.com</a>
-                    </p>
-                    <p class="contact-item">
-                        <a href="https://instagram.com/daniaparecido" target="_blank" rel="noopener noreferrer">Instagram: @daniaparecido</a>
-                    </p>
+    <!-- About Content -->
+    <main class="about-main">
+        <div class="about-content">
+            <p class="about-bio">
+                I'm Daniel Aparecido, a video editor and motion designer passionate about bringing stories to life through visual storytelling. With a keen eye for detail and a deep understanding of pacing and rhythm, I craft videos that captivate audiences and leave lasting impressions.
+            </p>
+            <p class="about-bio">
+                With experience in long-form content, short-form videos, and motion design, I help creators and brands craft compelling visual narratives that engage and inspire their audiences. Every frame matters, and I approach each project with the dedication it deserves.
+            </p>
+            <p class="about-bio">
+                Whether it's a YouTube video, social media content, or dynamic motion graphics, I bring creativity and technical expertise to every project. Let's create something memorable together.
+            </p>
+
+            <div class="about-divider"></div>
+
+            <div class="about-services">
+                <h2 class="about-services-title">Services</h2>
+                <div class="about-services-list">
+                    <span class="service-tag">Long-form Editing</span>
+                    <span class="service-tag">Short-form Content</span>
+                    <span class="service-tag">Motion Graphics</span>
+                    <span class="service-tag">Color Grading</span>
+                    <span class="service-tag">Sound Design</span>
+                    <span class="service-tag">Visual Effects</span>
+                </div>
+            </div>
+
+            <div class="about-contact">
+                <h3 class="about-contact-title">Get In <span>Touch</span></h3>
+                <div class="contact-links">
+                    <a href="mailto:daniaparecidocontato@gmail.com" class="contact-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        daniaparecidocontato@gmail.com
+                    </a>
+                    <a href="https://instagram.com/daniaparecido" target="_blank" rel="noopener noreferrer" class="contact-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                        Instagram: @daniaparecido
+                    </a>
                 </div>
             </div>
         </div>
     </main>
 
-    <footer class="footer">
-        <div class="footer-content">
-            <a href="mailto:daniaparecidocontato@gmail.com" class="footer-link">daniaparecidocontato@gmail.com</a>
-            <span class="footer-divider">|</span>
-            <a href="https://instagram.com/daniaparecido" target="_blank" rel="noopener noreferrer" class="footer-link">@daniaparecido</a>
-        </div>
+    <!-- Footer -->
+    <footer class="footer" style="margin-top: 0;">
+        <p class="footer-bottom">Daniel Aparecido</p>
     </footer>
 </body>
 </html>
