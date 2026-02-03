@@ -1,9 +1,8 @@
 /**
  * ============================================
  * PORTFOLIO MAIN JAVASCRIPT
- * Cinema Noir Editorial Theme
  * ============================================
- * Handles: Grid generation, filtering, lightbox, scroll reveals
+ * Handles: Grid generation, filtering, lightbox, hover previews
  */
 
 (function() {
@@ -16,9 +15,8 @@
     const lightbox = document.getElementById('lightbox');
     const lightboxClose = document.getElementById('lightbox-close');
     const videoContainer = document.getElementById('video-container');
-    const filterNav = document.querySelector('.filter-nav');
-    const navLinks = filterNav ? filterNav.querySelectorAll('.nav-link[data-category]') : [];
-    const sectionHeader = document.querySelector('.section-header');
+    const navLinks = document.querySelectorAll('.nav-link[data-category]');
+
 
     // ============================================
     // Helper Functions
@@ -46,34 +44,15 @@
     }
 
     // ============================================
-    // Scroll Reveal Observer
-    // ============================================
-
-    const revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('revealed');
-                revealObserver.unobserve(entry.target);
-            }
-        });
-    }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    });
-
-    // ============================================
     // Grid Generation
     // ============================================
 
     /**
      * Create a single grid item element
      */
-    function createGridItem(project, index) {
+    function createGridItem(project) {
         const item = document.createElement('div');
         item.className = 'grid-item';
-        if (project.featured) {
-            item.classList.add('featured');
-        }
         item.dataset.category = project.category;
         item.dataset.youtubeId = project.youtubeId;
 
@@ -88,16 +67,13 @@
                 </svg>
             </div>
             <div class="grid-item-overlay">
-                <span class="grid-item-category">${formatCategory(project.category)}</span>
                 <h3 class="grid-item-title">${project.title}</h3>
+                <span class="grid-item-category">${formatCategory(project.category)}</span>
             </div>
         `;
 
         // Click handler to open lightbox
         item.addEventListener('click', () => openLightbox(project.youtubeId));
-
-        // Observe for scroll reveal
-        revealObserver.observe(item);
 
         return item;
     }
@@ -110,8 +86,8 @@
 
         grid.innerHTML = '';
 
-        projectsToShow.forEach((project, index) => {
-            const item = createGridItem(project, index);
+        projectsToShow.forEach(project => {
+            const item = createGridItem(project);
             grid.appendChild(item);
         });
     }
@@ -140,12 +116,8 @@
         if (!category) return;
 
         // Update active state
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            link.style.color = 'var(--text-secondary)';
-        });
+        navLinks.forEach(link => link.classList.remove('active'));
         e.target.classList.add('active');
-        e.target.style.color = 'var(--text-primary)';
 
         // Filter and re-render
         const filteredProjects = filterProjects(category);
@@ -221,39 +193,6 @@
     }
 
     // ============================================
-    // Scroll Reveal Setup
-    // ============================================
-
-    function initScrollReveal() {
-        // Reveal section header
-        if (sectionHeader) {
-            revealObserver.observe(sectionHeader);
-        }
-    }
-
-    // ============================================
-    // Smooth Scroll for Anchor Links
-    // ============================================
-
-    function initSmoothScroll() {
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                if (href === '#') return;
-
-                const target = document.querySelector(href);
-                if (target) {
-                    e.preventDefault();
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-    }
-
-    // ============================================
     // Initialization
     // ============================================
 
@@ -263,17 +202,13 @@
             return;
         }
 
-        // Render all projects by default
-        renderGrid(projects);
+        renderGrid(filterProjects('long-form'));
         initNavigation();
         initLightbox();
-        initScrollReveal();
-        initSmoothScroll();
 
-        // Handle hash in URL
         const hash = window.location.hash.slice(1);
-        if (hash && hash !== 'work') {
-            const matchingLink = document.querySelector(`.filter-nav .nav-link[data-category="${hash}"]`);
+        if (hash) {
+            const matchingLink = document.querySelector(`.nav-link[data-category="${hash}"]`);
             if (matchingLink) {
                 matchingLink.click();
             }

@@ -8,83 +8,43 @@
     <title>Daniel Aparecido | Video Editor & Motion Designer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <!-- Fixed Navigation -->
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo-link">
+                <img src="images/logo.png" alt="Daniel Aparecido Logo" class="logo">
+            </a>
+            <div class="header-text">
+                <h1 class="site-title">Daniel Aparecido</h1>
+                <p class="site-subtitle">Video Editor and Motion Designer</p>
+            </div>
+        </div>
+    </header>
+
     <nav class="nav">
-        <a href="index.html" class="nav-logo">DA</a>
         <ul class="nav-list">
-            <li><a href="#work" class="nav-link active" data-category="all">Work</a></li>
+            <li><a href="#" class="nav-link active" data-category="long-form">Long-form</a></li>
+            <li><a href="#" class="nav-link" data-category="short-form">Short-form</a></li>
+            <li><a href="#" class="nav-link" data-category="motion-design">Motion Design</a></li>
             <li><a href="about.html" class="nav-link">About</a></li>
         </ul>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <div class="hero-logo">
-                <img src="images/logo.png" alt="Daniel Aparecido Logo">
-            </div>
-            <h1 class="hero-title">
-                <span class="first-name">Daniel</span>
-                <span class="last-name">Aparecido</span>
-            </h1>
-            <p class="hero-subtitle">Video Editor & Motion Designer</p>
-        </div>
-        <a href="#work" class="hero-scroll">
-            <span>Scroll</span>
-            <div class="hero-scroll-line"></div>
-        </a>
-    </section>
-
-    <!-- Main Content -->
-    <main class="main" id="work">
-        <div class="section-header">
-            <p class="section-label">Selected Work</p>
-            <h2 class="section-title">Projects</h2>
-        </div>
-
-        <!-- Category Filter -->
-        <nav class="filter-nav" style="margin-bottom: var(--space-lg);">
-            <ul class="nav-list" style="opacity: 1; animation: none; justify-content: flex-start;">
-                <li><a href="#" class="nav-link active" data-category="all" style="color: var(--text-primary);">All</a></li>
-                <li><a href="#" class="nav-link" data-category="long-form" style="color: var(--text-secondary);">Long-form</a></li>
-                <li><a href="#" class="nav-link" data-category="short-form" style="color: var(--text-secondary);">Short-form</a></li>
-                <li><a href="#" class="nav-link" data-category="motion-design" style="color: var(--text-secondary);">Motion Design</a></li>
-            </ul>
-        </nav>
-
+    <main class="main">
         <div class="grid" id="project-grid">
             <!-- Projects will be dynamically inserted here -->
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="footer">
-        <div class="footer-cta">
-            <h3 class="footer-heading">Let's <span>Create</span> Together</h3>
-            <p class="footer-text">Have a project in mind? I'd love to hear about it.</p>
+        <div class="footer-content">
+            <a href="mailto:daniaparecidocontato@gmail.com" class="footer-link">daniaparecidocontato@gmail.com</a>
+            <span class="footer-divider">|</span>
+            <a href="https://instagram.com/daniaparecido" target="_blank" rel="noopener noreferrer" class="footer-link">@daniaparecido</a>
         </div>
-        <div class="footer-links">
-            <a href="mailto:daniaparecidocontato@gmail.com" class="footer-link">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                    <polyline points="22,6 12,13 2,6"></polyline>
-                </svg>
-                daniaparecidocontato@gmail.com
-            </a>
-            <a href="https://instagram.com/daniaparecido" target="_blank" rel="noopener noreferrer" class="footer-link">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                </svg>
-                @daniaparecido
-            </a>
-        </div>
-        <p class="footer-bottom">Daniel Aparecido</p>
     </footer>
 
     <!-- Lightbox Modal -->
