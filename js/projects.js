@@ -5,7 +5,7 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-02-03 19:59
+ * Last updated: 2026-02-04 08:07
  */
 
 const projects = [
@@ -15,7 +15,7 @@ const projects = [
         videoId: "DW3F1OHfZeo",
         platform: "youtube",
         channelName: "Team Liquid League of Legends",
-        viewCount: "66K views",
+        viewCount: "82K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=DW3F1OHfZeo",
         previewVideo: "videos/previews/DW3F1OHfZeo.mp4"
@@ -48,7 +48,7 @@ const projects = [
         videoId: "rRG71DuPDds",
         platform: "youtube",
         channelName: "República Coisa de Nerd",
-        viewCount: "910K views",
+        viewCount: "911K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=rRG71DuPDds",
         previewVideo: "videos/previews/rRG71DuPDds.mp4"
