@@ -364,6 +364,15 @@ button {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
+/* Vertical video container (Instagram/TikTok) */
+.video-container.vertical-video {
+    padding-bottom: 0;
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .video-container iframe {
     position: absolute;
     top: 0;
@@ -373,25 +382,22 @@ button {
     border: none;
 }
 
-/* Instagram embed styling */
-.video-container .instagram-media {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    max-height: 90% !important;
-    overflow: auto !important;
+/* Instagram embed styling - fullscreen vertical */
+.video-container.vertical-video .instagram-media {
+    max-width: 540px !important;
+    width: 100% !important;
+    height: 100% !important;
     margin: 0 !important;
+    position: static !important;
 }
 
-/* TikTok embed styling */
-.video-container .tiktok-embed {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    max-height: 90% !important;
+/* TikTok embed styling - fullscreen vertical */
+.video-container.vertical-video .tiktok-embed {
+    max-width: 605px !important;
+    width: 100% !important;
+    height: 100% !important;
     margin: 0 !important;
+    position: static !important;
 }
 
 /* ========================================

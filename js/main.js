@@ -253,11 +253,14 @@
     function openInstagramLightbox(postUrl) {
         if (!lightbox || !videoContainer) return;
 
+        // Mark container as vertical video
+        videoContainer.classList.add('vertical-video');
+
         videoContainer.innerHTML = `
             <blockquote class="instagram-media"
                 data-instgrm-permalink="${postUrl}"
-                data-instgrm-version="14"
-                style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);">
+                data-instgrm-version="14">
+                <a href="${postUrl}"></a>
             </blockquote>
         `;
 
@@ -276,11 +279,20 @@
     function openTikTokLightbox(videoUrl) {
         if (!lightbox || !videoContainer) return;
 
+        // Mark container as vertical video
+        videoContainer.classList.add('vertical-video');
+
+        // Extract video ID from URL
+        const videoId = videoUrl.match(/\/video\/(\d+)/)?.[1] || videoUrl.split('/').pop();
+
         videoContainer.innerHTML = `
             <blockquote class="tiktok-embed"
                 cite="${videoUrl}"
-                data-video-id="${videoUrl.split('/').pop()}"
+                data-video-id="${videoId}"
                 style="max-width: 605px; min-width: 325px;">
+                <section>
+                    <a target="_blank" href="${videoUrl}">View on TikTok</a>
+                </section>
             </blockquote>
         `;
 
@@ -301,6 +313,7 @@
 
         lightbox.classList.remove('active');
         videoContainer.innerHTML = '';
+        videoContainer.classList.remove('vertical-video'); // Remove vertical class
         document.body.style.overflow = '';
 
         // Clean up dynamically added TikTok scripts to prevent memory leaks
