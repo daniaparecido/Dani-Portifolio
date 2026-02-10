@@ -50,11 +50,17 @@ Dani Portifolio/
 4. Vercel auto-deploys
 
 ### Platform Behavior
-| Platform  | Thumbnail Source | Hover Preview | Click Action |
-|-----------|------------------|---------------|--------------|
-| YouTube   | YouTube CDN      | Local .mp4    | Lightbox embed |
-| Instagram | Local file       | Local .mp4    | Opens new tab |
-| TikTok    | Local file       | Local .mp4    | Opens new tab |
+| Platform  | Thumbnail Source | Hover Preview | Click Action | Lightbox Content |
+|-----------|------------------|---------------|--------------|------------------|
+| YouTube   | YouTube CDN      | Local .mp4    | Lightbox | YouTube embed + "Watch on YouTube" button |
+| Instagram | Local file       | Local .mp4    | Lightbox | Local full video + "Watch on Instagram" button |
+| TikTok    | Local file       | Local .mp4    | Lightbox | Local full video + "Watch on TikTok" button |
+
+**All platforms now open in lightbox** with:
+- Full video playback (YouTube: embed, Instagram/TikTok: local source video)
+- "Watch on [Platform]" button (top-right, opens original URL in new tab)
+- Clean HTML5 controls for local videos
+- Glassmorphism pill button design
 
 ### Automated Stats Refresh
 GitHub Actions runs daily at 9:00 AM UTC:

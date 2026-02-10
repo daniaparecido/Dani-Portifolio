@@ -15,7 +15,7 @@ Contains array of project objects:
     channelName: "Channel Name",
     viewCount: "1.2M views",
     thumbnail: "",  // Empty for YouTube (uses CDN)
-    url: "https://...",
+    url: "https://...",  // Full URL to video on platform
     previewVideo: "videos/previews/abc123.mp4"
 }
 ```
@@ -24,31 +24,64 @@ Contains array of project objects:
 Handles all frontend interactivity.
 
 **Key Functions:**
+
+**Thumbnail & Preview Helpers:**
 - `getThumbnailUrl(project)` - Returns thumbnail path based on platform
   - YouTube: `https://img.youtube.com/vi/{id}/maxresdefault.jpg`
   - Instagram/TikTok: `images/thumbnails/{id}.jpg`
 - `getFallbackThumbnail(project)` - Lower quality YouTube fallback
+- `getYouTubeEmbedUrl(videoId)` - Returns YouTube embed URL with autoplay
+- `getYouTubePreviewUrl(videoId)` - Returns YouTube embed URL for hover preview
 - `hasLocalPreview(project)` - Checks if preview video exists
-- `createGridItem(project)` - Creates DOM element for grid
-- `openLightbox(videoId)` - Opens YouTube embed in modal
-- `closeLightbox()` - Closes modal and cleans up
+
+**Grid & Filtering:**
+- `createGridItem(project)` - Creates DOM element for grid with hover previews
 - `renderGrid(projects)` - Renders filtered project grid
 - `filterProjects(category)` - Filters by category
+- `handleFilterClick(e)` - Click handler for category filters
+- `initNavigation()` - Initializes filter navigation
+
+**Lightbox:**
+- `openYouTubeLightbox(videoId, url)` - Opens YouTube embed in lightbox with "Watch on YouTube" button
+- `openVideoLightbox(videoId, platform, url)` - Opens local video (Instagram/TikTok) in lightbox with "Watch on [Platform]" button
+- `closeLightbox()` - Closes modal, pauses video, cleans up
+- `initLightbox()` - Sets up lightbox event listeners
+
+**Initialization:**
+- `init()` - Main initialization function
 
 **Behavior by Platform:**
-| Platform | Thumbnail | Hover Preview | Click Action |
-|----------|-----------|---------------|--------------|
-| YouTube | CDN URL | Local video or iframe | Lightbox |
-| Instagram | Local file | Local video | New tab |
-| TikTok | Local file | Local video | New tab |
+| Platform | Thumbnail | Hover Preview | Click Action | Lightbox Content |
+|----------|-----------|---------------|--------------|------------------|
+| YouTube | CDN URL | Local video or iframe | Lightbox | YouTube embed + "Watch on YouTube" button |
+| Instagram | Local file | Local video | Lightbox | Local full video + "Watch on Instagram" button |
+| TikTok | Local file | Local video | Lightbox | Local full video + "Watch on TikTok" button |
 
 **CSS Classes Used:**
-- `.grid-item` - Base grid item
+- `.grid-item` - Base grid item with scale on hover (1.05x)
 - `.has-preview` - Has hover preview capability
 - `.vertical-item` - 9:16 aspect ratio (Instagram/TikTok)
-- `.preview-active` - Currently showing preview
+- `.preview-active` - Currently showing preview (adds scale effect)
+- `.play-icon` - Play button overlay
+- `.grid-item-overlay` - Title/meta overlay (always visible)
+- `.watch-on-platform` - Platform link button in lightbox
 
 **Event Flow:**
 1. `mouseenter` (500ms delay) → Load preview video/iframe
-2. `mouseleave` → Clean up preview, release memory
-3. `click` → Open lightbox (YouTube) or new tab (others)
+2. **Immediate hover** → Grid item scales to 1.05x
+3. `mouseleave` → Clean up preview, reset scale
+4. `click` → Open lightbox with full video (all platforms now use lightbox)
+
+**Lightbox Features:**
+- YouTube: Embedded iframe with native controls
+- Instagram/TikTok: Local HTML5 video with native controls
+- "Watch on [Platform]" button in top-right corner
+- Opens original URL in new tab when clicked
+- Glassmorphism pill button with hover effects
+
+**Recent Changes:**
+- Removed Instagram/TikTok embed scripts
+- Now uses local full videos (`videos/source/`) for Instagram/TikTok in lightbox
+- Added "Watch on Platform" button to all lightbox views
+- Always-visible overlay on grid items (no hover required)
+- Scale effect triggers immediately on hover

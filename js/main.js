@@ -106,11 +106,11 @@
         // Click handler - Open appropriate lightbox based on platform
         item.addEventListener('click', () => {
             if (platform === 'youtube') {
-                openYouTubeLightbox(videoId);
+                openYouTubeLightbox(videoId, project.url);
             } else if (platform === 'instagram') {
-                openVideoLightbox(videoId, 'Instagram');
+                openVideoLightbox(videoId, 'instagram', project.url);
             } else if (platform === 'tiktok') {
-                openVideoLightbox(videoId, 'TikTok');
+                openVideoLightbox(videoId, 'tiktok', project.url);
             }
         });
 
@@ -229,7 +229,7 @@
     /**
      * Open the lightbox with a YouTube video
      */
-    function openYouTubeLightbox(videoId) {
+    function openYouTubeLightbox(videoId, url) {
         if (!lightbox || !videoContainer) return;
 
         const embedUrl = getYouTubeEmbedUrl(videoId);
@@ -241,6 +241,14 @@
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen>
             </iframe>
+            <a href="${url}" target="_blank" rel="noopener noreferrer" class="watch-on-platform">
+                Watch on YouTube
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+            </a>
         `;
 
         lightbox.classList.add('active');
@@ -250,23 +258,34 @@
     /**
      * Open the lightbox with a local video file (Instagram/TikTok)
      */
-    function openVideoLightbox(videoId, platform) {
+    function openVideoLightbox(videoId, platform, url) {
         if (!lightbox || !videoContainer) return;
 
         // Mark container as vertical video
         videoContainer.classList.add('vertical-video');
 
         const videoPath = `videos/source/${videoId}.mp4`;
+        const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
 
         videoContainer.innerHTML = `
-            <video
-                class="lightbox-video"
-                src="${videoPath}"
-                controls
-                autoplay
-                playsinline>
-                Your browser does not support the video tag.
-            </video>
+            <div class="vertical-video-wrapper">
+                <video
+                    class="lightbox-video"
+                    src="${videoPath}"
+                    controls
+                    autoplay
+                    playsinline>
+                    Your browser does not support the video tag.
+                </video>
+                <a href="${url}" target="_blank" rel="noopener noreferrer" class="watch-on-platform">
+                    Watch on ${platformName}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                </a>
+            </div>
         `;
 
         lightbox.classList.add('active');

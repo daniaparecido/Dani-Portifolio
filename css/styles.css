@@ -396,12 +396,61 @@ button {
 
 /* Video player styling for Instagram/TikTok */
 .lightbox-video {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: auto !important;
+    height: auto !important;
     border-radius: 4px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    object-fit: contain !important; /* Show full video without cropping */
+    display: block;
+}
+
+/* Wrapper for vertical videos to properly position button */
+.vertical-video-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* Watch on Platform Button */
+.watch-on-platform {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 18px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 100;
+    cursor: pointer;
+}
+
+.watch-on-platform svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.watch-on-platform:hover {
+    background: rgba(255, 255, 255, 0.95);
+    color: #000000;
+    border-color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+.watch-on-platform:hover svg {
+    transform: translate(2px, -2px);
 }
 
 /* ========================================
