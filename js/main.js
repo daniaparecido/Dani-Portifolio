@@ -103,12 +103,14 @@
             </div>
         `;
 
-        // Click handler - YouTube opens lightbox, others open in new tab
+        // Click handler - Open appropriate lightbox based on platform
         item.addEventListener('click', () => {
             if (platform === 'youtube') {
-                openLightbox(videoId);
-            } else if (project.url) {
-                window.open(project.url, '_blank');
+                openYouTubeLightbox(videoId);
+            } else if (platform === 'instagram' && project.url) {
+                openInstagramLightbox(project.url);
+            } else if (platform === 'tiktok' && project.url) {
+                openTikTokLightbox(project.url);
             }
         });
 
@@ -227,7 +229,7 @@
     /**
      * Open the lightbox with a YouTube video
      */
-    function openLightbox(videoId) {
+    function openYouTubeLightbox(videoId) {
         if (!lightbox || !videoContainer) return;
 
         const embedUrl = getYouTubeEmbedUrl(videoId);
@@ -246,6 +248,52 @@
     }
 
     /**
+     * Open the lightbox with an Instagram post
+     */
+    function openInstagramLightbox(postUrl) {
+        if (!lightbox || !videoContainer) return;
+
+        videoContainer.innerHTML = `
+            <blockquote class="instagram-media"
+                data-instgrm-permalink="${postUrl}"
+                data-instgrm-version="14"
+                style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);">
+            </blockquote>
+        `;
+
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Initialize Instagram embed
+        if (window.instgrm) {
+            window.instgrm.Embeds.process();
+        }
+    }
+
+    /**
+     * Open the lightbox with a TikTok video
+     */
+    function openTikTokLightbox(videoUrl) {
+        if (!lightbox || !videoContainer) return;
+
+        videoContainer.innerHTML = `
+            <blockquote class="tiktok-embed"
+                cite="${videoUrl}"
+                data-video-id="${videoUrl.split('/').pop()}"
+                style="max-width: 605px; min-width: 325px;">
+            </blockquote>
+        `;
+
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Reload TikTok embed script with cache busting
+        const script = document.createElement('script');
+        script.src = `https://www.tiktok.com/embed.js?t=${Date.now()}`;
+        document.body.appendChild(script);
+    }
+
+    /**
      * Close the lightbox
      */
     function closeLightbox() {
@@ -254,6 +302,13 @@
         lightbox.classList.remove('active');
         videoContainer.innerHTML = '';
         document.body.style.overflow = '';
+
+        // Clean up dynamically added TikTok scripts to prevent memory leaks
+        document.querySelectorAll('script[src*="tiktok.com/embed.js"]').forEach(script => {
+            if (script.src.includes('?t=')) {
+                script.remove();
+            }
+        });
     }
 
     /**

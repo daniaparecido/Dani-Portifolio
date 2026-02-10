@@ -357,7 +357,7 @@ button {
 .video-container {
     position: relative;
     width: 100%;
-    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    padding-bottom: 56.25%; /* 16:9 aspect ratio (default for YouTube) */
     background-color: #000000;
     border-radius: 4px;
     overflow: hidden;
@@ -371,6 +371,27 @@ button {
     width: 100%;
     height: 100%;
     border: none;
+}
+
+/* Instagram embed styling */
+.video-container .instagram-media {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    max-height: 90% !important;
+    overflow: auto !important;
+    margin: 0 !important;
+}
+
+/* TikTok embed styling */
+.video-container .tiktok-embed {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    max-height: 90% !important;
+    margin: 0 !important;
 }
 
 /* ========================================
