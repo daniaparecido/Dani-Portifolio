@@ -178,6 +178,12 @@ button {
     cursor: pointer;
     background-color: #111111;
     border-radius: 3px;
+    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.grid-item:hover {
+    transform: scale(1.05);
+    z-index: 10;
 }
 
 .grid-item img {
@@ -191,7 +197,7 @@ button {
 
 .grid-item:hover img {
     transform: scale(1.05);
-    filter: brightness(0.6);
+    filter: brightness(0.7); /* Slightly brighter for better text readability over always-visible overlay */
 }
 
 /* Video Preview on Hover */
@@ -216,6 +222,10 @@ button {
     object-fit: cover;
 }
 
+.grid-item.preview-active {
+    /* Scale and z-index handled by :hover state */
+}
+
 .grid-item.preview-active .grid-item-preview {
     opacity: 1;
 }
@@ -235,7 +245,7 @@ button {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0.85);
+    transform: translate(-50%, -50%) scale(0.9);
     width: 70px;
     height: 70px;
     background: rgba(255, 255, 255, 0.95);
@@ -243,10 +253,11 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
+    opacity: 0.6; /* Subtle visibility even without hover */
     transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 3;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
 }
 
 .play-icon svg {
@@ -258,10 +269,15 @@ button {
 
 .grid-item:hover .play-icon {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -50%) scale(1.05);
 }
 
 .grid-item.has-preview:hover .play-icon {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+}
+
+.grid-item.preview-active .play-icon {
     opacity: 0;
 }
 
@@ -272,13 +288,9 @@ button {
     right: 0;
     padding: 20px;
     background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
-    opacity: 0;
+    opacity: 1; /* Always visible for cleaner, consistent UI */
     transition: opacity 0.35s ease;
     z-index: 4;
-}
-
-.grid-item:hover .grid-item-overlay {
-    opacity: 1;
 }
 
 .grid-item-title {
@@ -382,22 +394,14 @@ button {
     border: none;
 }
 
-/* Instagram embed styling - fullscreen vertical */
-.video-container.vertical-video .instagram-media {
-    max-width: 540px !important;
-    width: 100% !important;
-    height: 100% !important;
-    margin: 0 !important;
-    position: static !important;
-}
-
-/* TikTok embed styling - fullscreen vertical */
-.video-container.vertical-video .tiktok-embed {
-    max-width: 605px !important;
-    width: 100% !important;
-    height: 100% !important;
-    margin: 0 !important;
-    position: static !important;
+/* Video player styling for Instagram/TikTok */
+.lightbox-video {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 /* ========================================

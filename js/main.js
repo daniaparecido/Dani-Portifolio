@@ -107,10 +107,10 @@
         item.addEventListener('click', () => {
             if (platform === 'youtube') {
                 openYouTubeLightbox(videoId);
-            } else if (platform === 'instagram' && project.url) {
-                openInstagramLightbox(project.url);
-            } else if (platform === 'tiktok' && project.url) {
-                openTikTokLightbox(project.url);
+            } else if (platform === 'instagram') {
+                openVideoLightbox(videoId, 'Instagram');
+            } else if (platform === 'tiktok') {
+                openVideoLightbox(videoId, 'TikTok');
             }
         });
 
@@ -248,61 +248,29 @@
     }
 
     /**
-     * Open the lightbox with an Instagram post
+     * Open the lightbox with a local video file (Instagram/TikTok)
      */
-    function openInstagramLightbox(postUrl) {
+    function openVideoLightbox(videoId, platform) {
         if (!lightbox || !videoContainer) return;
 
         // Mark container as vertical video
         videoContainer.classList.add('vertical-video');
 
+        const videoPath = `videos/source/${videoId}.mp4`;
+
         videoContainer.innerHTML = `
-            <blockquote class="instagram-media"
-                data-instgrm-permalink="${postUrl}"
-                data-instgrm-version="14">
-                <a href="${postUrl}"></a>
-            </blockquote>
+            <video
+                class="lightbox-video"
+                src="${videoPath}"
+                controls
+                autoplay
+                playsinline>
+                Your browser does not support the video tag.
+            </video>
         `;
 
         lightbox.classList.add('active');
         document.body.style.overflow = 'hidden';
-
-        // Initialize Instagram embed
-        if (window.instgrm) {
-            window.instgrm.Embeds.process();
-        }
-    }
-
-    /**
-     * Open the lightbox with a TikTok video
-     */
-    function openTikTokLightbox(videoUrl) {
-        if (!lightbox || !videoContainer) return;
-
-        // Mark container as vertical video
-        videoContainer.classList.add('vertical-video');
-
-        // Extract video ID from URL
-        const videoId = videoUrl.match(/\/video\/(\d+)/)?.[1] || videoUrl.split('/').pop();
-
-        videoContainer.innerHTML = `
-            <blockquote class="tiktok-embed"
-                cite="${videoUrl}"
-                data-video-id="${videoId}"
-                style="max-width: 605px; min-width: 325px;">
-                <section>
-                    <a target="_blank" href="${videoUrl}">View on TikTok</a>
-                </section>
-            </blockquote>
-        `;
-
-        lightbox.classList.add('active');
-        document.body.style.overflow = 'hidden';
-
-        // Reload TikTok embed script with cache busting
-        const script = document.createElement('script');
-        script.src = `https://www.tiktok.com/embed.js?t=${Date.now()}`;
-        document.body.appendChild(script);
     }
 
     /**
@@ -311,17 +279,17 @@
     function closeLightbox() {
         if (!lightbox || !videoContainer) return;
 
+        // Pause any playing videos before closing
+        const video = videoContainer.querySelector('video');
+        if (video) {
+            video.pause();
+            video.src = ''; // Release video resources
+        }
+
         lightbox.classList.remove('active');
         videoContainer.innerHTML = '';
         videoContainer.classList.remove('vertical-video'); // Remove vertical class
         document.body.style.overflow = '';
-
-        // Clean up dynamically added TikTok scripts to prevent memory leaks
-        document.querySelectorAll('script[src*="tiktok.com/embed.js"]').forEach(script => {
-            if (script.src.includes('?t=')) {
-                script.remove();
-            }
-        });
     }
 
     /**
