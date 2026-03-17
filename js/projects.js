@@ -5,7 +5,7 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-03-16 07:00
+ * Last updated: 2026-03-17 06:51
  */
 
 const projects = [
@@ -15,7 +15,7 @@ const projects = [
         videoId: "DW3F1OHfZeo",
         platform: "youtube",
         channelName: "Team Liquid League of Legends",
-        viewCount: "330K views",
+        viewCount: "334K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=DW3F1OHfZeo",
         previewVideo: "videos/previews/DW3F1OHfZeo.mp4"
@@ -26,7 +26,7 @@ const projects = [
         videoId: "KZYFvgajyPE",
         platform: "youtube",
         channelName: "Team Liquid CS2 | Counter Strike",
-        viewCount: "90K views",
+        viewCount: "91K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=KZYFvgajyPE",
         previewVideo: "videos/previews/KZYFvgajyPE.mp4"
@@ -48,7 +48,7 @@ const projects = [
         videoId: "rRG71DuPDds",
         platform: "youtube",
         channelName: "República Coisa de Nerd",
-        viewCount: "932K views",
+        viewCount: "933K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=rRG71DuPDds",
         previewVideo: "videos/previews/rRG71DuPDds.mp4"
@@ -81,7 +81,7 @@ const projects = [
         videoId: "7491305946581339397",
         platform: "tiktok",
         channelName: "teamliquidbr",
-        viewCount: "103K views",
+        viewCount: "104K views",
         thumbnail: "",
         url: "https://www.tiktok.com/@teamliquidbr/video/7491305946581339397",
         previewVideo: "videos/previews/7491305946581339397.mp4"
