@@ -1,5 +1,10 @@
-# Source videos (large files, download with yt-dlp)
-videos/source/
+# Source videos - only keep short-form (Instagram/TikTok), ignore long-form (YouTube)
+videos/source/DW3F1OHfZeo.mp4
+videos/source/gVQEYRTtm68.mp4
+videos/source/KZYFvgajyPE.mp4
+videos/source/rRG71DuPDds.mp4
+videos/source/TZfM1yfkFn4.mp4
+videos/source/*.part
 
 # Cookies file (sensitive)
 cookies.txt
