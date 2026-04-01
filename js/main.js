@@ -94,9 +94,11 @@
         const fallbackUrl = getFallbackThumbnail(project);
 
         item.innerHTML = `
-            <img src="${thumbnailUrl}" alt="${project.title}" loading="lazy"
-                 ${fallbackUrl ? `onerror="this.src='${fallbackUrl}'"` : ''}>
-            <div class="grid-item-preview"></div>
+            <div class="grid-item-thumb">
+                <img src="${thumbnailUrl}" alt="${project.title}" loading="lazy"
+                     ${fallbackUrl ? `onerror="this.src='${fallbackUrl}'"` : ''}>
+                <div class="grid-item-preview"></div>
+            </div>
             <div class="grid-item-overlay">
                 <h3 class="grid-item-title">${project.title}</h3>
                 <span class="grid-item-meta">${project.channelName || ''} ${project.channelName && project.viewCount ? '·' : ''} ${project.viewCount || ''}</span>

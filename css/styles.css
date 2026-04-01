@@ -241,12 +241,17 @@ button {
 
 .grid-item {
     position: relative;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
     cursor: pointer;
     background-color: #111111;
     border-radius: 3px;
     transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.grid-item-thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 3px;
 }
 
 .grid-item:hover {
@@ -254,18 +259,16 @@ button {
     z-index: 10;
 }
 
-.grid-item img {
+.grid-item-thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                filter 0.3s ease,
                 opacity 0.4s ease;
 }
 
-.grid-item:hover img {
+.grid-item:hover .grid-item-thumb img {
     transform: scale(1.05);
-    filter: brightness(0.7); /* Slightly brighter for better text readability over always-visible overlay */
 }
 
 /* Video Preview on Hover */
@@ -298,13 +301,12 @@ button {
     opacity: 1;
 }
 
-.grid-item.preview-active img {
+.grid-item.preview-active .grid-item-thumb img {
     opacity: 0;
 }
 
-.grid-item.preview-active:hover img {
+.grid-item.preview-active:hover .grid-item-thumb img {
     transform: none;
-    filter: none;
 }
 
 
@@ -350,14 +352,7 @@ button {
 }
 
 .grid-item-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 10px 12px;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
-    opacity: 1;
-    transition: opacity 0.35s ease;
+    padding: 8px 2px;
     z-index: 4;
 }
 
@@ -365,12 +360,15 @@ button {
     font-size: 13px;
     font-weight: 400;
     margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .grid-item-meta {
     font-size: 11px;
     font-weight: 400;
-    color: #aaaaaa;
+    color: #888888;
 }
 
 /* ========================================
@@ -524,12 +522,12 @@ button {
 /* ========================================
    Vertical Video Grid Items (Instagram/TikTok)
    ======================================== */
-.grid-item.vertical-item {
-    aspect-ratio: 9 / 16;
+#short-form-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
 
-.grid-item.vertical-item .grid-item-overlay {
-    background: linear-gradient(transparent 60%, rgba(0, 0, 0, 0.9));
+.grid-item.vertical-item .grid-item-thumb {
+    aspect-ratio: 9 / 16;
 }
 
 /* ========================================
