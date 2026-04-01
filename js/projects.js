@@ -5,8 +5,10 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-03-31 22:38
+ * Last updated: 2026-04-01 01:09
  */
+
+const totalYouTubeViews = 430359826;
 
 const projects = [
     {
@@ -123,23 +125,23 @@ const projects = [
         title: "Impossível contar a história do Valorant sem contar a história da @soylabstrdd! 😍 Obrigada Visa por ",
         category: "short-form",
         videoId: "7491305946581339397",
-        platform: "tiktok",
+        platform: "instagram",
         channelName: "teamliquidbr",
         viewCount: "104K views",
         thumbnail: "",
-        url: "https://www.tiktok.com/@teamliquidbr/video/7491305946581339397",
+        url: "https://www.instagram.com/p/DIOkD4iMlUJ/",
         previewVideo: "videos/previews/7491305946581339397.mp4"
     },
     {
-        title: "If you could switch lives with anyone for a day, who would it be? #niki #nihachu #nikinihachu #qna #",
+        title: "Renderizar em segundos um projeto que levaria horas no seu PC? 👀 Vem pra Noar e dê um upgrade nos se",
         category: "short-form",
-        videoId: "7482743040923258155",
-        platform: "tiktok",
-        channelName: "liquid",
-        viewCount: "74K views",
+        videoId: "C1_1fTOOtRS",
+        platform: "instagram",
+        channelName: "Noar",
+        viewCount: "0 likes",
         thumbnail: "",
-        url: "https://www.tiktok.com/@liquid/video/7482743040923258155",
-        previewVideo: "videos/previews/7482743040923258155.mp4"
+        url: "https://www.instagram.com/p/C1_1fTOOtRS/",
+        previewVideo: "videos/previews/C1_1fTOOtRS.mp4"
     },
     {
         title: "WILL HE EVER SMILE?????????? #chess #chessplayer #magnus #magnuscarlsen",
@@ -219,14 +221,14 @@ const projects = [
         previewVideo: "videos/previews/C_73MY3NUkK.mp4"
     },
     {
-        title: "Bruxaria? Vídeo rodando no notebook? 👀 Nada disso! Aqui é Noar! 💜 E o @brunoplayhard colocou a prova",
+        title: "LEON E NILCE = GÊNIOS #desafio",
         category: "short-form",
-        videoId: "Cz_Ot4XM5ne",
-        platform: "instagram",
-        channelName: "Noar",
-        viewCount: "477 likes",
+        videoId: "RXdWLha8dcM",
+        platform: "youtube",
+        channelName: "República Coisa de Nerd",
+        viewCount: "1.2M views",
         thumbnail: "",
-        url: "https://www.instagram.com/p/Cz_Ot4XM5ne/",
-        previewVideo: "videos/previews/Cz_Ot4XM5ne.mp4"
+        url: "https://www.youtube.com/watch?v=RXdWLha8dcM",
+        previewVideo: "videos/previews/RXdWLha8dcM.mp4"
     },
 ];

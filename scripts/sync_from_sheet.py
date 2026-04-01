@@ -44,6 +44,11 @@ SCOPES = [
 HEADERS_YOUTUBE = ["URL", "Video ID", "Title", "Channel", "Views", "Last Updated"]
 HEADERS_SOCIAL = ["URL", "Video ID", "Title", "Channel", "Views", "Likes", "Last Updated"]
 
+# External spreadsheets for total view count
+YOUTUBE_SHEET_ID = "157LkGyuY_jMWwTWKu2w4Sh9lw0qHCURXKUufFfgOgqg"
+YOUTUBE_SHEET_TABS = ["Long-form", "Short-form"]
+VIEWS_COLUMN = 6  # Column F (1-indexed)
+
 # Map worksheet names to category and type
 WORKSHEET_CONFIG = {
     "Long-term": {"category": "long-form", "headers": HEADERS_YOUTUBE, "type": "youtube"},
@@ -378,6 +383,69 @@ class SheetsClient:
 
 
 # ============================================
+# Total View Count (from external YouTube sheet)
+# ============================================
+
+def parse_formatted_number(s: str) -> int:
+    """Parse a formatted number like '364 k', '1,8 M', '474' into an integer."""
+    s = s.strip().lower()
+    if not s:
+        return 0
+
+    # Try plain integer first
+    plain = s.replace(",", "").replace(".", "")
+    if plain.isdigit():
+        return int(plain)
+
+    # Parse "364 k", "1,8 M" etc. (Brazilian locale uses comma as decimal)
+    match = re.match(r'([\d.,]+)\s*(k|m|b)?', s, re.IGNORECASE)
+    if not match:
+        return 0
+
+    num_str = match.group(1).replace(",", ".")  # Convert Brazilian decimal to standard
+    suffix = (match.group(2) or "").lower()
+
+    try:
+        num = float(num_str)
+    except ValueError:
+        return 0
+
+    multipliers = {"k": 1_000, "m": 1_000_000, "b": 1_000_000_000}
+    return int(num * multipliers.get(suffix, 1))
+
+
+def fetch_total_youtube_views(credentials_file: str = None, credentials_json: str = None) -> int:
+    """Sum all views from the external YouTube Edited Videos spreadsheet."""
+    try:
+        if credentials_json:
+            creds_dict = json.loads(credentials_json)
+            credentials = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+        elif credentials_file:
+            credentials = Credentials.from_service_account_file(credentials_file, scopes=SCOPES)
+        else:
+            return 0
+
+        client = gspread.authorize(credentials)
+        spreadsheet = client.open_by_key(YOUTUBE_SHEET_ID)
+
+        total = 0
+        for tab_name in YOUTUBE_SHEET_TABS:
+            try:
+                ws = spreadsheet.worksheet(tab_name)
+                values = ws.col_values(VIEWS_COLUMN)[1:]  # Skip header
+                tab_total = sum(parse_formatted_number(v) for v in values)
+                print(f"  {tab_name}: {format_count(tab_total)} from {len(values)} videos")
+                total += tab_total
+            except Exception as e:
+                print(f"  Warning: Could not read tab '{tab_name}' from YouTube sheet: {e}")
+
+        return total
+    except Exception as e:
+        print(f"  Warning: Could not fetch total YouTube views: {e}")
+        return 0
+
+
+# ============================================
 # Projects.js Generator
 # ============================================
 
@@ -396,7 +464,7 @@ def escape_js_string(s: str) -> str:
     return s.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
 
 
-def generate_projects_js(projects: list[dict]) -> str:
+def generate_projects_js(projects: list[dict], total_views: int = 0) -> str:
     """Generate the projects.js file content."""
     lines = [
         '/**',
@@ -408,6 +476,8 @@ def generate_projects_js(projects: list[dict]) -> str:
         ' * Or use the /sync-videos skill in Claude Code',
         f' * Last updated: {get_timestamp()}',
         ' */',
+        '',
+        f'const totalYouTubeViews = {total_views};',
         '',
         'const projects = [',
     ]
@@ -683,10 +753,19 @@ def main():
             projects = process_worksheet(config, ws_name, ws_config, mode, args.dry_run, args.fetch_thumbnails)
             all_projects.extend(projects)
 
+        # Fetch total YouTube views from external sheet
+        print("\nFetching total YouTube views from external spreadsheet...")
+        total_views = fetch_total_youtube_views(
+            credentials_file=config["credentials_file"],
+            credentials_json=config.get("credentials_json"),
+        )
+        if total_views > 0:
+            print(f"  Total YouTube views: {format_count(total_views)}")
+
         # Generate projects.js
         if all_projects:
             print(f"\nGenerating projects.js with {len(all_projects)} projects...")
-            content = generate_projects_js(all_projects)
+            content = generate_projects_js(all_projects, total_views)
 
             if args.dry_run:
                 print("\n[DRY RUN] Would write:")

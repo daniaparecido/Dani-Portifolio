@@ -7,8 +7,8 @@ A portfolio website for Daniel Aparecido (Video Editor and Motion Designer) show
 - **Frontend**: Vanilla HTML/CSS/JavaScript
 - **Backend**: Static site (no server)
 - **Data Source**: Google Sheets (synced via Python script)
-- **Hosting**: Vercel (auto-deploys from GitHub)
-- **CI/CD**: GitHub Actions (daily stats refresh at 9:00 AM UTC)
+- **Hosting**: GitHub Pages (auto-deploys on push to main)
+- **CI/CD**: GitHub Actions (deploy.yml for Pages, update-videos.yml for daily stats refresh at 9:00 AM UTC)
 
 ## Project Structure
 ```
@@ -32,6 +32,7 @@ Dani Portifolio/
 ├── images/
 │   └── thumbnails/         # Local thumbnails (Instagram/TikTok)
 ├── .github/workflows/
+│   ├── deploy.yml          # GitHub Pages deploy on push to main
 │   └── update-videos.yml   # Daily stats refresh workflow
 └── .claude/
     └── skills/             # Claude Code skills
@@ -47,7 +48,7 @@ Dani Portifolio/
    - Creates 30-second preview clip
    - Updates `js/projects.js`
 3. Commit and push to GitHub
-4. Vercel auto-deploys
+4. GitHub Pages auto-deploys via deploy.yml workflow
 
 ### Platform Behavior
 | Platform  | Thumbnail Source | Hover Preview | Click Action | Lightbox Content |
@@ -67,8 +68,7 @@ GitHub Actions runs daily at 9:00 AM UTC:
 1. Fetches latest view counts from YouTube API / yt-dlp
 2. Updates Google Sheet
 3. Regenerates `projects.js`
-4. Commits changes
-5. Triggers Vercel deploy hook
+4. Commits changes (triggers GitHub Pages deploy automatically)
 
 ## Environment Variables (.env)
 ```

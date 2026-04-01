@@ -20,6 +20,26 @@
 
 
     // ============================================
+    // View Counter
+    // ============================================
+
+    function formatTotalViews(num) {
+        if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M+';
+        if (num >= 1000) return Math.round(num / 1000) + 'K+';
+        return num.toString();
+    }
+
+    function updateViewCounter() {
+        const counter = document.getElementById('view-counter');
+        if (!counter || typeof totalYouTubeViews === 'undefined' || totalYouTubeViews <= 0) return;
+
+        var stat = document.createElement('div');
+        stat.className = 'hero-stat-count';
+        stat.innerHTML = '<span class="hero-stat-number">' + formatTotalViews(totalYouTubeViews) + '</span><span class="hero-stat-label">views on<br>edited videos</span>';
+        counter.insertBefore(stat, counter.firstChild);
+    }
+
+    // ============================================
     // Helper Functions
     // ============================================
 
@@ -299,6 +319,57 @@
     // Initialization
     // ============================================
 
+    // ============================================
+    // Mobile Tabs
+    // ============================================
+
+    function initMobileTabs() {
+        const tabsContainer = document.getElementById('mobile-tabs');
+        if (!tabsContainer) return;
+
+        const tabs = tabsContainer.querySelectorAll('.mobile-tab');
+        const longFormSection = document.getElementById('section-long-form');
+        const shortFormSection = document.getElementById('section-short-form');
+
+        function switchTab(tabName) {
+            tabs.forEach(function(t) {
+                t.classList.toggle('active', t.dataset.tab === tabName);
+            });
+
+            if (longFormSection) {
+                longFormSection.classList.toggle('mobile-hidden', tabName !== 'long-form');
+            }
+            if (shortFormSection) {
+                shortFormSection.classList.toggle('mobile-hidden', tabName !== 'short-form');
+            }
+        }
+
+        tabs.forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                switchTab(tab.dataset.tab);
+            });
+        });
+
+        // Set initial state: show long-form, hide short-form
+        var isMobile = window.matchMedia('(max-width: 768px)').matches;
+        if (isMobile) {
+            switchTab('long-form');
+        }
+
+        // Listen for resize to show/hide sections appropriately
+        window.matchMedia('(max-width: 768px)').addEventListener('change', function(e) {
+            if (e.matches) {
+                // Switched to mobile — apply active tab
+                var activeTab = tabsContainer.querySelector('.mobile-tab.active');
+                switchTab(activeTab ? activeTab.dataset.tab : 'long-form');
+            } else {
+                // Switched to desktop — show both sections
+                if (longFormSection) longFormSection.classList.remove('mobile-hidden');
+                if (shortFormSection) shortFormSection.classList.remove('mobile-hidden');
+            }
+        });
+    }
+
     function init() {
         if (typeof projects === 'undefined' || !Array.isArray(projects)) {
             console.error('Projects data not found. Make sure projects.js is loaded before main.js');
@@ -311,6 +382,8 @@
         renderGrid(longFormGrid, longFormProjects);
         renderGrid(shortFormGrid, shortFormProjects);
         initLightbox();
+        updateViewCounter();
+        initMobileTabs();
     }
 
     if (document.readyState === 'loading') {
