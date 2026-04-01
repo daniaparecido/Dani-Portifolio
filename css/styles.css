@@ -523,8 +523,12 @@ button {
 /* ========================================
    Vertical Video Grid Items (Instagram/TikTok)
    ======================================== */
+#short-form-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
 .grid-item.vertical-item .grid-item-thumb {
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 9 / 16;
 }
 
 /* ========================================
