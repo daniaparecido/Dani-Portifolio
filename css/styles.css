@@ -22,6 +22,7 @@ body {
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
 }
 
 a {
@@ -927,8 +928,28 @@ button {
         gap: 6px;
     }
 
-    #short-form-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
+    /* Short-form: YouTube Shorts style — 2 cols, cropped, overlaid text */
+    #short-form-grid .grid-item-thumb {
+        aspect-ratio: 4 / 5;
+        border-radius: 8px;
+    }
+
+    #short-form-grid .grid-item-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 24px 8px 8px;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+        border-radius: 0 0 8px 8px;
+    }
+
+    #short-form-grid .grid-item-title {
+        color: #ffffff;
+    }
+
+    #short-form-grid .grid-item {
+        position: relative;
     }
 
     .grid-item-overlay {
