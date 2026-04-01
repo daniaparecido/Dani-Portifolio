@@ -48,30 +48,3 @@ jobs:
           git commit -m "Update video stats [automated]"
           git push
 
-      - name: Trigger Vercel deployment
-        if: steps.git-check.outputs.changed == 'true'
-        run: curl -X POST ${{ secrets.VERCEL_DEPLOY_HOOK }}
-
-  # Optional: Deploy to GitHub Pages after update
-  # Uncomment if using GitHub Pages
-  # deploy:
-  #   needs: update-stats
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     pages: write
-  #     id-token: write
-  #   environment:
-  #     name: github-pages
-  #     url: ${{ steps.deployment.outputs.page_url }}
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #     - name: Setup Pages
-  #       uses: actions/configure-pages@v4
-  #     - name: Upload artifact
-  #       uses: actions/upload-pages-artifact@v3
-  #       with:
-  #         path: '.'
-  #     - name: Deploy to GitHub Pages
-  #       id: deployment
-  #       uses: actions/deploy-pages@v4
