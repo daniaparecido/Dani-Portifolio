@@ -258,6 +258,7 @@ button {
 .grid-item:hover {
     transform: scale(1.05);
     z-index: 10;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 1);
 }
 
 .grid-item-thumb img {
@@ -353,7 +354,7 @@ button {
 }
 
 .grid-item-overlay {
-    padding: 8px 2px;
+    padding: 10px 8px;
     z-index: 4;
 }
 
@@ -523,8 +524,8 @@ button {
 /* ========================================
    Vertical Video Grid Items (Instagram/TikTok)
    ======================================== */
-.grid-item.vertical-item .grid-item-thumb {
-    aspect-ratio: 16 / 9;
+#short-form-grid .grid-item-thumb {
+    aspect-ratio: 9 / 16;
 }
 
 /* ========================================
