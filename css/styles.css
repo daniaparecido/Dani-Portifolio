@@ -524,7 +524,7 @@ button {
    Vertical Video Grid Items (Instagram/TikTok)
    ======================================== */
 #short-form-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
 }
 
 .grid-item.vertical-item .grid-item-thumb {
@@ -726,6 +726,10 @@ button {
 
     .grid {
         gap: 15px;
+    }
+
+    #short-form-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 
     /* Show overlay and play icon on mobile since no hover */
