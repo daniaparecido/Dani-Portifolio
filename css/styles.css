@@ -162,6 +162,26 @@ button {
 }
 
 /* ========================================
+   Sections
+   ======================================== */
+.section {
+    margin-bottom: 60px;
+}
+
+.section:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888888;
+    margin-bottom: 20px;
+}
+
+/* ========================================
    Project Grid
    ======================================== */
 .grid {

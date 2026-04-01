@@ -12,11 +12,11 @@
     // ============================================
     // DOM Elements
     // ============================================
-    const grid = document.getElementById('project-grid');
+    const longFormGrid = document.getElementById('long-form-grid');
+    const shortFormGrid = document.getElementById('short-form-grid');
     const lightbox = document.getElementById('lightbox');
     const lightboxClose = document.getElementById('lightbox-close');
     const videoContainer = document.getElementById('video-container');
-    const navLinks = document.querySelectorAll('.nav-link[data-category]');
 
 
     // ============================================
@@ -168,9 +168,9 @@
     }
 
     /**
-     * Render all projects to the grid
+     * Render projects to a specific grid element
      */
-    function renderGrid(projectsToShow) {
+    function renderGrid(grid, projectsToShow) {
         if (!grid) return;
 
         grid.innerHTML = '';
@@ -178,47 +178,6 @@
         projectsToShow.forEach(project => {
             const item = createGridItem(project);
             grid.appendChild(item);
-        });
-    }
-
-    /**
-     * Filter projects by category
-     */
-    function filterProjects(category) {
-        if (category === 'all') {
-            return projects;
-        }
-        return projects.filter(project => project.category === category);
-    }
-
-    // ============================================
-    // Navigation / Filtering
-    // ============================================
-
-    /**
-     * Handle category filter click
-     */
-    function handleFilterClick(e) {
-        e.preventDefault();
-
-        const category = e.target.dataset.category;
-        if (!category) return;
-
-        // Update active state
-        navLinks.forEach(link => link.classList.remove('active'));
-        e.target.classList.add('active');
-
-        // Filter and re-render
-        const filteredProjects = filterProjects(category);
-        renderGrid(filteredProjects);
-    }
-
-    /**
-     * Set up navigation event listeners
-     */
-    function initNavigation() {
-        navLinks.forEach(link => {
-            link.addEventListener('click', handleFilterClick);
         });
     }
 
@@ -344,17 +303,12 @@
             return;
         }
 
-        renderGrid(filterProjects('long-form'));
-        initNavigation();
-        initLightbox();
+        const longFormProjects = projects.filter(p => p.category === 'long-form');
+        const shortFormProjects = projects.filter(p => p.category === 'short-form');
 
-        const hash = window.location.hash.slice(1);
-        if (hash) {
-            const matchingLink = document.querySelector(`.nav-link[data-category="${hash}"]`);
-            if (matchingLink) {
-                matchingLink.click();
-            }
-        }
+        renderGrid(longFormGrid, longFormProjects);
+        renderGrid(shortFormGrid, shortFormProjects);
+        initLightbox();
     }
 
     if (document.readyState === 'loading') {
