@@ -922,10 +922,15 @@ button {
         padding: 8px;
     }
 
-    /* Force 2-col grid on mobile — override minmax(320px) */
+    /* Force 2-col grid on mobile — minmax(0,1fr) allows shrinking below content width */
     .grid {
-        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 6px;
+    }
+
+    .grid-item {
+        min-width: 0;
+        overflow: hidden;
     }
 
     /* Short-form: YouTube Shorts style — 2 cols, cropped, overlaid text */
