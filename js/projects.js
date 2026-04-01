@@ -5,17 +5,28 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-03-31 07:00
+ * Last updated: 2026-03-31 22:01
  */
 
 const projects = [
+    {
+        title: "20 ANOS DE YOUTUBE! - Os melhores vídeos da história",
+        category: "long-form",
+        videoId: "rRG71DuPDds",
+        platform: "youtube",
+        channelName: "República Coisa de Nerd",
+        viewCount: "939K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=rRG71DuPDds",
+        previewVideo: "videos/previews/rRG71DuPDds.mp4"
+    },
     {
         title: "Beat me in League, win $1000",
         category: "long-form",
         videoId: "DW3F1OHfZeo",
         platform: "youtube",
         channelName: "Team Liquid League of Legends",
-        viewCount: "362K views",
+        viewCount: "364K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=DW3F1OHfZeo",
         previewVideo: "videos/previews/DW3F1OHfZeo.mp4"
@@ -30,28 +41,6 @@ const projects = [
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=KZYFvgajyPE",
         previewVideo: "videos/previews/KZYFvgajyPE.mp4"
-    },
-    {
-        title: "Adeus Windows! Bem-vindo Linux!",
-        category: "long-form",
-        videoId: "TZfM1yfkFn4",
-        platform: "youtube",
-        channelName: "Coisa de Nerd",
-        viewCount: "1.0M views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=TZfM1yfkFn4",
-        previewVideo: "videos/previews/TZfM1yfkFn4.mp4"
-    },
-    {
-        title: "20 ANOS DE YOUTUBE! - Os melhores vídeos da história",
-        category: "long-form",
-        videoId: "rRG71DuPDds",
-        platform: "youtube",
-        channelName: "República Coisa de Nerd",
-        viewCount: "938K views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=rRG71DuPDds",
-        previewVideo: "videos/previews/rRG71DuPDds.mp4"
     },
     {
         title: "LOUD CAMPEÃ DO VALORANT E LOL!!! - Thaigão News",

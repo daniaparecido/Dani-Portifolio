@@ -336,7 +336,7 @@ function Process-All {
             continue
         }
         # Match youtubeId on non-commented lines
-        if ($line -match 'youtubeId:\s*"([^"]+)"') {
+        if ($line -match 'videoId:\s*"([^"]+)"') {
             $videoIds += $matches[1]
         }
     }
