@@ -103,6 +103,32 @@ button {
     align-items: center;
 }
 
+.header-cta {
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    font-size: 13px;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.25s ease;
+}
+
+.header-cta svg {
+    transition: transform 0.25s ease;
+}
+
+.header-cta:hover {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+}
+
+.header-cta:hover svg {
+    transform: translateY(-1px);
+}
+
 .header-contact-link {
     font-size: 13px;
     color: #888888;
