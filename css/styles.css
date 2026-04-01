@@ -71,6 +71,7 @@ button {
 .header-content {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 20px;
 }
 
@@ -97,10 +98,10 @@ button {
 }
 
 .header-contact {
-    margin-left: auto;
     display: flex;
     gap: 20px;
     align-items: center;
+    margin-left: 20px;
 }
 
 .header-cta {
