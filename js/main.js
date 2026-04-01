@@ -222,6 +222,12 @@
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen>
             </iframe>
+        `;
+
+        // Add button below video container
+        let existingBtn = videoContainer.parentElement.querySelector('.watch-on-platform');
+        if (existingBtn) existingBtn.remove();
+        videoContainer.insertAdjacentHTML('afterend', `
             <a href="${url}" target="_blank" rel="noopener noreferrer" class="watch-on-platform">
                 Watch on YouTube
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -230,7 +236,7 @@
                     <line x1="10" y1="14" x2="21" y2="3"></line>
                 </svg>
             </a>
-        `;
+        `);
 
         lightbox.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -258,16 +264,22 @@
                     playsinline>
                     Your browser does not support the video tag.
                 </video>
-                <a href="${url}" target="_blank" rel="noopener noreferrer" class="watch-on-platform">
-                    Watch on ${platformName}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                        <polyline points="15 3 21 3 21 9"></polyline>
-                        <line x1="10" y1="14" x2="21" y2="3"></line>
-                    </svg>
-                </a>
             </div>
         `;
+
+        // Add button below video container
+        let existingBtn = videoContainer.parentElement.querySelector('.watch-on-platform');
+        if (existingBtn) existingBtn.remove();
+        videoContainer.insertAdjacentHTML('afterend', `
+            <a href="${url}" target="_blank" rel="noopener noreferrer" class="watch-on-platform">
+                Watch on ${platformName}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+            </a>
+        `);
 
         lightbox.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -289,6 +301,9 @@
         lightbox.classList.remove('active');
         videoContainer.innerHTML = '';
         videoContainer.classList.remove('vertical-video'); // Remove vertical class
+        // Remove button placed outside video container
+        const btn = videoContainer.parentElement.querySelector('.watch-on-platform');
+        if (btn) btn.remove();
         document.body.style.overflow = '';
     }
 
@@ -370,6 +385,46 @@
         });
     }
 
+    function initVideoListDropdown() {
+        const toggle = document.getElementById('video-list-toggle');
+        const dropdown = toggle?.closest('.video-list-dropdown');
+        if (!toggle || !dropdown) return;
+
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('open');
+        });
+
+        const menu = dropdown.querySelector('.video-list-menu');
+        menu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        document.addEventListener('click', () => {
+            dropdown.classList.remove('open');
+        });
+    }
+
+    function initCopyEmail() {
+        const btn = document.getElementById('copy-email-btn');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            const email = btn.dataset.email;
+            navigator.clipboard.writeText(email).then(() => {
+                btn.classList.add('copied');
+                const tooltip = document.createElement('span');
+                tooltip.className = 'copy-email-tooltip';
+                tooltip.textContent = 'Copied!';
+                btn.appendChild(tooltip);
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    tooltip.remove();
+                }, 1500);
+            });
+        });
+    }
+
     function init() {
         if (typeof projects === 'undefined' || !Array.isArray(projects)) {
             console.error('Projects data not found. Make sure projects.js is loaded before main.js');
@@ -382,6 +437,8 @@
         renderGrid(longFormGrid, longFormProjects);
         renderGrid(shortFormGrid, shortFormProjects);
         initLightbox();
+        initVideoListDropdown();
+        initCopyEmail();
         updateViewCounter();
         initMobileTabs();
     }

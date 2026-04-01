@@ -40,5 +40,8 @@ nul
 *.swp
 *.swo
 
+# Claude Code memory files
+CLAUDE.md
+
 # Node modules (if any)
 node_modules/
