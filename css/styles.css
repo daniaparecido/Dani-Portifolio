@@ -443,6 +443,8 @@ button {
 .grid-item-overlay {
     padding: 10px 8px;
     z-index: 4;
+    overflow: hidden;
+    min-width: 0;
 }
 
 .grid-item-title {
