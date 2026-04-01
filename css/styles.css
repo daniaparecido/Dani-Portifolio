@@ -171,6 +171,9 @@ button {
     padding: 20px 40px;
     border-bottom: 1px solid #222222;
     animation: fadeIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) 0.25s both;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .hero-stat-links {
@@ -292,6 +295,9 @@ button {
 .main {
     flex: 1;
     padding: 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 /* ========================================
