@@ -474,13 +474,13 @@ button {
 
 @media (hover: hover) and (pointer: fine) {
     .grid-item:hover {
-        transform: scale(1.05);
+        transform: scale(1.10);
         z-index: 10;
         box-shadow: 0 12px 32px rgba(0, 0, 0, 1);
     }
 
     .grid-item:hover .grid-item-thumb img {
-        transform: scale(1.05);
+        transform: scale(1.10);
     }
 }
 
