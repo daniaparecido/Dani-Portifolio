@@ -61,6 +61,7 @@ button {
    ======================================== */
 .header {
     padding: 40px 40px 20px;
+    border-bottom: 1px solid #222222;
 }
 
 .header-content {
@@ -89,6 +90,23 @@ button {
     display: flex;
     flex-direction: column;
     gap: 4px;
+}
+
+.header-contact {
+    margin-left: auto;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.header-contact-link {
+    font-size: 13px;
+    color: #888888;
+    transition: color 0.25s ease;
+}
+
+.header-contact-link:hover {
+    color: #ffffff;
 }
 
 .site-title {
@@ -637,6 +655,13 @@ button {
     }
 
     .header-content {
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .header-contact {
+        width: 100%;
+        margin-left: 0;
         gap: 15px;
     }
 
