@@ -5,10 +5,10 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-04-01 07:03
+ * Last updated: 2026-04-02 06:56
  */
 
-const totalYouTubeViews = 430374826;
+const totalYouTubeViews = 430402826;
 
 const projects = [
     {
@@ -28,7 +28,7 @@ const projects = [
         videoId: "DW3F1OHfZeo",
         platform: "youtube",
         channelName: "Team Liquid League of Legends",
-        viewCount: "364K views",
+        viewCount: "366K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=DW3F1OHfZeo",
         previewVideo: "videos/previews/DW3F1OHfZeo.mp4"
