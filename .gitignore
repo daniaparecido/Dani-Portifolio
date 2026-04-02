@@ -12,11 +12,14 @@ videos/source/_lZYR2VkZTg.mp4
 videos/source/iuYQuxHScRg.mp4
 videos/source/*.part
 
-# Cookies file (sensitive)
+# Cookies files (sensitive)
 cookies.txt
+tracker/tiktok/cookies.txt
+tracker/instagram/cookies.txt
 
 # Environment variables (sensitive)
 .env
+tracker/.env
 
 # Google Service Account credentials (sensitive)
 _key/
@@ -26,6 +29,8 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+tracker/venv/
+tracker/instagram/debug_output.txt
 
 # OS generated files
 .DS_Store
@@ -39,6 +44,10 @@ nul
 .vscode/
 *.swp
 *.swo
+
+# Resume and cover letter (personal)
+Daniel_Aparecido_Resume.txt
+Daniel_Aparecido_Cover_Letter.txt
 
 # Claude Code memory files
 CLAUDE.md

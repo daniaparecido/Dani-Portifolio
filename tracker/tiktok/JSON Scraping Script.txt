@@ -1,0 +1,34 @@
+(() => {
+  const seen = new Set();
+  const urls = [];
+
+  // Target only the visible video cards in the collection grid
+  document.querySelectorAll('div[class*="DivItemContainer"] a, div[class*="VideoCard"] a, div[class*="ItemCard"] a').forEach(link => {
+    const href = link.href || '';
+    const match = href.match(/\/video\/(\d+)/);
+    if (match && !seen.has(match[1])) {
+      seen.add(match[1]);
+      urls.push(href.split('?')[0]);
+    }
+  });
+
+  // Fallback: target links inside the main content area only
+  if (urls.length === 0) {
+    document.querySelectorAll('div[class*="Collection"] a, main a').forEach(link => {
+      const href = link.href || '';
+      const match = href.match(/\/video\/(\d+)/);
+      if (match && !seen.has(match[1])) {
+        seen.add(match[1]);
+        urls.push(href.split('?')[0]);
+      }
+    });
+  }
+
+  console.log(`Found ${urls.length} URLs (page says 71 videos)`);
+
+  const blob = new Blob([urls.join('\n')], {type: 'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'tiktok_urls.txt';
+  a.click();
+})();

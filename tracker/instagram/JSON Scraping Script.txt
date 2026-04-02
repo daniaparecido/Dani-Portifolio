@@ -1,0 +1,21 @@
+(() => {
+  const seen = new Set();
+  const urls = [];
+
+  document.querySelectorAll('a').forEach(link => {
+    const href = link.href || '';
+    const match = href.match(/\/(reel|p)\/([^/?]+)/);
+    if (match && !seen.has(match[2])) {
+      seen.add(match[2]);
+      urls.push(`https://www.instagram.com/${match[1]}/${match[2]}/`);
+    }
+  });
+
+  const blob = new Blob([urls.join('\n')], {type: 'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'instagram_urls.txt';
+  a.click();
+
+  console.log(`✓ Downloading ${urls.length} URLs`);
+})();
