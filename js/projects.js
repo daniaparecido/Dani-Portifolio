@@ -5,22 +5,22 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-04-02 21:52
+ * Last updated: 2026-04-02 22:14
  */
 
 const totalYouTubeViews = 431169826;
 
 const projects = [
     {
-        title: "20 ANOS DE YOUTUBE! - Os melhores vídeos da história",
+        title: "OS LIMITES DA ESTUPIDEZ!",
         category: "long-form",
-        videoId: "rRG71DuPDds",
+        videoId: "1Yxj8LEwogA",
         platform: "youtube",
         channelName: "República Coisa de Nerd",
-        viewCount: "939K views",
+        viewCount: "876K views",
         thumbnail: "",
-        url: "https://www.youtube.com/watch?v=rRG71DuPDds",
-        previewVideo: "videos/previews/rRG71DuPDds.mp4"
+        url: "https://www.youtube.com/watch?v=1Yxj8LEwogA",
+        previewVideo: "videos/previews/1Yxj8LEwogA.mp4"
     },
     {
         title: "Beat me in League, win $1000",
@@ -32,6 +32,17 @@ const projects = [
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=DW3F1OHfZeo",
         previewVideo: "videos/previews/DW3F1OHfZeo.mp4"
+    },
+    {
+        title: "QUANTO CUSTAVAM AS COISAS 30 ANOS ATRÁS?",
+        category: "long-form",
+        videoId: "M7RsTKpk9sE",
+        platform: "youtube",
+        channelName: "República Coisa de Nerd",
+        viewCount: "533K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=M7RsTKpk9sE",
+        previewVideo: "videos/previews/M7RsTKpk9sE.mp4"
     },
     {
         title: "Guess the Secret CS Pro",
@@ -78,17 +89,6 @@ const projects = [
         previewVideo: "videos/previews/mnO5bES3eQY.mp4"
     },
     {
-        title: "A B0NGADA de 28(?) LITROS! Se liga nessa brisa",
-        category: "long-form",
-        videoId: "z35NsYGlX1E",
-        platform: "youtube",
-        channelName: "umdois",
-        viewCount: "53K views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=z35NsYGlX1E",
-        previewVideo: "videos/previews/z35NsYGlX1E.mp4"
-    },
-    {
         title: "MÃES DE PROS JOGAM VALORANT PELA 1ª VEZ!",
         category: "long-form",
         videoId: "JgEullP4AVo",
@@ -98,17 +98,6 @@ const projects = [
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=JgEullP4AVo",
         previewVideo: "videos/previews/JgEullP4AVo.mp4"
-    },
-    {
-        title: "QUANTO CUSTAVAM AS COISAS 30 ANOS ATRÁS?",
-        category: "long-form",
-        videoId: "M7RsTKpk9sE",
-        platform: "youtube",
-        channelName: "República Coisa de Nerd",
-        viewCount: "533K views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=M7RsTKpk9sE",
-        previewVideo: "videos/previews/M7RsTKpk9sE.mp4"
     },
     {
         title: "INVESTIGAÇÃO! CULPADA POR SER A MAIOR SÉRIE DE TRUE CRIME? | #EmmyTNT",
@@ -133,15 +122,26 @@ const projects = [
         previewVideo: "videos/previews/vP1rwg-rzcI.mp4"
     },
     {
-        title: "Invadimos o camarim do HAIKAISS na Intercannabis",
+        title: "20 ANOS DE YOUTUBE! - Os melhores vídeos da história",
         category: "long-form",
-        videoId: "0VTN4lkjHqM",
+        videoId: "rRG71DuPDds",
         platform: "youtube",
-        channelName: "umdois",
-        viewCount: "50K views",
+        channelName: "República Coisa de Nerd",
+        viewCount: "939K views",
         thumbnail: "",
-        url: "https://www.youtube.com/watch?v=0VTN4lkjHqM",
-        previewVideo: "videos/previews/0VTN4lkjHqM.mp4"
+        url: "https://www.youtube.com/watch?v=rRG71DuPDds",
+        previewVideo: "videos/previews/rRG71DuPDds.mp4"
+    },
+    {
+        title: "Adeus Windows! Bem-vindo Linux!",
+        category: "long-form",
+        videoId: "TZfM1yfkFn4",
+        platform: "youtube",
+        channelName: "Coisa de Nerd",
+        viewCount: "1.0M views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=TZfM1yfkFn4",
+        previewVideo: "videos/previews/TZfM1yfkFn4.mp4"
     },
     {
         title: "Impossível contar a história do Valorant sem contar a história da @bvstrdd! 😍 Obrigada @visa_br por ",
@@ -227,7 +227,7 @@ const projects = [
         platform: "instagram",
         channelName: "Team Liquid BR 🇧🇷",
         viewCount: "169 likes",
-        thumbnail: "https://instagram.fcgh14-1.fna.fbcdn.net/v/t51.71878-15/496347282_2942168615958005_7404458332104121095_n.jpg?stp=dst-jpg_e15_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6ImltYWdlX3VybGdlbi42MTJ4MTA4Ni5zZHIuZjcxODc4LmRlZmF1bHRfY292ZXJfZnJhbWUuYzIifQ&_nc_ht=instagram.fcgh14-1.fna.fbcdn.net&_nc_cat=105&_nc_oc=Q6cZ2gEE9YoH_WrGV8zY0cJ39z7qlXu_VMVZgjNlzDKhllhCA5U8huxezcPhvypD6Ve6WamkM4tFZ-ZwS7rpjfZaNdgs&_nc_ohc=PqDQXV8CHkgQ7kNvwEX1CX3&_nc_gid=boWBbrDtkqfw6nN6BiuHrg&edm=ANTKIIoBAAAA&ccb=7-5&oh=00_Af35x-idRNQxaFKUPk1K3p0hpgyzQlYSRpbZHZxxo8Nyaw&oe=69D4DC8D&_nc_sid=d885a2",
+        thumbnail: "",
         url: "https://www.instagram.com/reel/DD7aw3XtZSq/?igsh=emRuZWJnMzVhaHdh",
         previewVideo: "videos/previews/DD7aw3XtZSq.mp4"
     },
