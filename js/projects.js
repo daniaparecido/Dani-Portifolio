@@ -5,7 +5,7 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-04-02 22:14
+ * Last updated: 2026-04-02 22:20
  */
 
 const totalYouTubeViews = 431169826;
@@ -54,6 +54,17 @@ const projects = [
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=XLPy6sLi_jk",
         previewVideo: "videos/previews/XLPy6sLi_jk.mp4"
+    },
+    {
+        title: "A B0NGADA de 28(?) LITROS! Se liga nessa brisa",
+        category: "long-form",
+        videoId: "z35NsYGlX1E",
+        platform: "youtube",
+        channelName: "umdois",
+        viewCount: "53K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=z35NsYGlX1E",
+        previewVideo: "videos/previews/z35NsYGlX1E.mp4"
     },
     {
         title: "LOUD CAMPEÃ DO VALORANT E LOL!!! - Thaigão News",
@@ -120,17 +131,6 @@ const projects = [
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=vP1rwg-rzcI",
         previewVideo: "videos/previews/vP1rwg-rzcI.mp4"
-    },
-    {
-        title: "20 ANOS DE YOUTUBE! - Os melhores vídeos da história",
-        category: "long-form",
-        videoId: "rRG71DuPDds",
-        platform: "youtube",
-        channelName: "República Coisa de Nerd",
-        viewCount: "939K views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=rRG71DuPDds",
-        previewVideo: "videos/previews/rRG71DuPDds.mp4"
     },
     {
         title: "Adeus Windows! Bem-vindo Linux!",
