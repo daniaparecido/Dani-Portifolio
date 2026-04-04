@@ -5,7 +5,7 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-04-03 23:06
+ * Last updated: 2026-04-03 23:52
  */
 
 const totalYouTubeViews = 430913827;
@@ -45,15 +45,15 @@ const projects = [
         previewVideo: "videos/previews/2aGmg_RHZFE.mp4"
     },
     {
-        title: "Guess the Secret CS Pro",
+        title: "Guess the Secret CS2 Player (actual pro)",
         category: "long-form",
-        videoId: "XLPy6sLi_jk",
+        videoId: "KZYFvgajyPE",
         platform: "youtube",
         channelName: "Team Liquid CS2 | Counter Strike",
-        viewCount: "89K views",
+        viewCount: "91K views",
         thumbnail: "",
-        url: "https://www.youtube.com/watch?v=XLPy6sLi_jk",
-        previewVideo: "videos/previews/XLPy6sLi_jk.mp4"
+        url: "https://www.youtube.com/watch?v=KZYFvgajyPE",
+        previewVideo: "videos/previews/KZYFvgajyPE.mp4"
     },
     {
         title: "NÃO É SEMPRE QUE SE GANHA...",
