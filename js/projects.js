@@ -5,22 +5,22 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-04-03 06:48
+ * Last updated: 2026-04-03 23:06
  */
 
-const totalYouTubeViews = 431185827;
+const totalYouTubeViews = 430913827;
 
 const projects = [
     {
-        title: "OS LIMITES DA ESTUPIDEZ!",
+        title: "ELA VIROU NPC DO TIKTOK?!",
         category: "long-form",
-        videoId: "1Yxj8LEwogA",
+        videoId: "oWPH_tX1SVU",
         platform: "youtube",
         channelName: "República Coisa de Nerd",
-        viewCount: "876K views",
+        viewCount: "459K views",
         thumbnail: "",
-        url: "https://www.youtube.com/watch?v=1Yxj8LEwogA",
-        previewVideo: "videos/previews/1Yxj8LEwogA.mp4"
+        url: "https://www.youtube.com/watch?v=oWPH_tX1SVU",
+        previewVideo: "videos/previews/oWPH_tX1SVU.mp4"
     },
     {
         title: "Beat me in League, win $1000",
@@ -34,15 +34,15 @@ const projects = [
         previewVideo: "videos/previews/DW3F1OHfZeo.mp4"
     },
     {
-        title: "QUANTO CUSTAVAM AS COISAS 30 ANOS ATRÁS?",
+        title: "IMPROVÁVEL NÃO É IMPOSSÍVEL.",
         category: "long-form",
-        videoId: "M7RsTKpk9sE",
+        videoId: "2aGmg_RHZFE",
         platform: "youtube",
         channelName: "República Coisa de Nerd",
-        viewCount: "534K views",
+        viewCount: "492K views",
         thumbnail: "",
-        url: "https://www.youtube.com/watch?v=M7RsTKpk9sE",
-        previewVideo: "videos/previews/M7RsTKpk9sE.mp4"
+        url: "https://www.youtube.com/watch?v=2aGmg_RHZFE",
+        previewVideo: "videos/previews/2aGmg_RHZFE.mp4"
     },
     {
         title: "Guess the Secret CS Pro",
@@ -56,15 +56,15 @@ const projects = [
         previewVideo: "videos/previews/XLPy6sLi_jk.mp4"
     },
     {
-        title: "A B0NGADA de 28(?) LITROS! Se liga nessa brisa",
+        title: "NÃO É SEMPRE QUE SE GANHA...",
         category: "long-form",
-        videoId: "z35NsYGlX1E",
+        videoId: "WOGQI0PAjEU",
         platform: "youtube",
-        channelName: "umdois",
-        viewCount: "53K views",
+        channelName: "República Coisa de Nerd",
+        viewCount: "261K views",
         thumbnail: "",
-        url: "https://www.youtube.com/watch?v=z35NsYGlX1E",
-        previewVideo: "videos/previews/z35NsYGlX1E.mp4"
+        url: "https://www.youtube.com/watch?v=WOGQI0PAjEU",
+        previewVideo: "videos/previews/WOGQI0PAjEU.mp4"
     },
     {
         title: "LOUD CAMPEÃ DO VALORANT E LOL!!! - Thaigão News",
