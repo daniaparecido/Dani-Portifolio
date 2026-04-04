@@ -74,7 +74,7 @@
      * Get YouTube embed URL for lightbox (with sound)
      */
     function getYouTubeEmbedUrl(videoId) {
-        return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&vq=hd1080`;
     }
 
     /**
