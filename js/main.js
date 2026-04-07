@@ -99,14 +99,6 @@
             }
         }
 
-        // Respect user's reduced-motion preference: snap to the static full
-        // number with no animation, and never start the interval.
-        const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (reduceMotion) {
-            setOdometer(slots, formatTotalViews(realTotal), false);
-            return;
-        }
-
         let current = startValue;
         let intervalId = null;
 
