@@ -52,6 +52,17 @@
         stat.innerHTML = '<span class="hero-stat-number odometer"></span><span class="hero-stat-label">views on<br>edited videos</span>';
         counter.insertBefore(stat, counter.firstChild);
 
+        // Static video count to the LEFT of the views odometer.
+        // We don't animate this — Daniel doesn't edit a video every second.
+        if (typeof totalYouTubeVideos !== 'undefined' && totalYouTubeVideos > 0) {
+            const videosStat = document.createElement('div');
+            videosStat.className = 'hero-stat-count hero-stat-count--secondary';
+            videosStat.innerHTML =
+                '<span class="hero-stat-number">' + totalYouTubeVideos.toLocaleString('en-US') + '</span>' +
+                '<span class="hero-stat-label">edited<br>videos</span>';
+            counter.insertBefore(videosStat, stat);
+        }
+
         const numberEl = stat.querySelector('.hero-stat-number');
 
         // Build the odometer DOM from the start value's formatted string.
