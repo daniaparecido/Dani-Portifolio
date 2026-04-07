@@ -20,23 +20,177 @@
 
 
     // ============================================
-    // View Counter
+    // View Counter (live odometer ticker)
     // ============================================
+    // Runs entirely client-side. No API calls, no backend.
+    // Starts at (totalYouTubeViews - VIEW_TICKS_PER_LOOP), ticks +1 every
+    // VIEW_TICK_INTERVAL_MS, and on reaching the real total snaps back and loops.
+    // 150 ticks * 2000ms = 300s = 5 minutes per loop.
+    //
+    // Each digit lives in its own "slot" (overflow:hidden, height:1em) containing
+    // a vertical strip of <span>0</span>...<span>9</span>. To show digit N we
+    // translate the strip up by N em. Only digits whose value actually changed
+    // animate, so the rightmost digit rolls every tick and higher digits roll
+    // less often — exactly like a real odometer.
+
+    const VIEW_TICK_INTERVAL_MS = 2000;
+    const VIEW_TICKS_PER_LOOP = 150;
 
     function formatTotalViews(num) {
-        if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M+';
-        if (num >= 1000) return Math.round(num / 1000) + 'K+';
-        return num.toString();
+        return num.toLocaleString('en-US');
     }
 
     function updateViewCounter() {
         const counter = document.getElementById('view-counter');
         if (!counter || typeof totalYouTubeViews === 'undefined' || totalYouTubeViews <= 0) return;
 
-        var stat = document.createElement('div');
+        const realTotal = totalYouTubeViews;
+        const startValue = realTotal - VIEW_TICKS_PER_LOOP;
+
+        const stat = document.createElement('div');
         stat.className = 'hero-stat-count';
-        stat.innerHTML = '<span class="hero-stat-number">' + formatTotalViews(totalYouTubeViews) + '</span><span class="hero-stat-label">views on<br>edited videos</span>';
+        stat.innerHTML = '<span class="hero-stat-number odometer"></span><span class="hero-stat-label">views on<br>edited videos</span>';
         counter.insertBefore(stat, counter.firstChild);
+
+        // Static video count to the LEFT of the views odometer.
+        // We don't animate this — Daniel doesn't edit a video every second.
+        if (typeof totalYouTubeVideos !== 'undefined' && totalYouTubeVideos > 0) {
+            const videosStat = document.createElement('div');
+            videosStat.className = 'hero-stat-count hero-stat-count--secondary';
+            videosStat.innerHTML =
+                '<span class="hero-stat-number">' + totalYouTubeVideos.toLocaleString('en-US') + '</span>' +
+                '<span class="hero-stat-label">edited<br>videos</span>';
+            counter.insertBefore(videosStat, stat);
+        }
+
+        const numberEl = stat.querySelector('.hero-stat-number');
+
+        // Build the odometer DOM from the start value's formatted string.
+        // Digit count is fixed at init; the value never crosses a power of 10.
+        const initialFormatted = formatTotalViews(startValue);
+        const slots = []; // { strip, currentDigit }
+
+        for (let i = 0; i < initialFormatted.length; i++) {
+            const ch = initialFormatted.charAt(i);
+            if (ch >= '0' && ch <= '9') {
+                const slot = document.createElement('span');
+                slot.className = 'odometer-digit';
+                const strip = document.createElement('span');
+                strip.className = 'odometer-strip';
+                // 11 children: 0..9 plus a duplicate 0 at the bottom so a
+                // 9 -> 0 transition can roll FORWARD into the duplicate 0
+                // and then silently snap back to the top 0 for the next tick.
+                for (let d = 0; d <= 10; d++) {
+                    const dEl = document.createElement('span');
+                    dEl.className = 'odometer-d';
+                    dEl.textContent = String(d % 10);
+                    strip.appendChild(dEl);
+                }
+                slot.appendChild(strip);
+                numberEl.appendChild(slot);
+                const initDigit = parseInt(ch, 10);
+                strip.style.transform = 'translateY(-' + initDigit + 'em)';
+                slots.push({ strip: strip, currentDigit: initDigit, snapBackTimer: null });
+            } else {
+                const sep = document.createElement('span');
+                sep.className = 'odometer-sep';
+                sep.textContent = ch;
+                numberEl.appendChild(sep);
+            }
+        }
+
+        let current = startValue;
+        let intervalId = null;
+
+        function tick() {
+            current += 1;
+            let isReset = false;
+            if (current > realTotal) {
+                current = startValue;
+                isReset = true;
+            }
+            setOdometer(slots, formatTotalViews(current), !isReset);
+        }
+
+        function start() {
+            if (intervalId === null) {
+                intervalId = setInterval(tick, VIEW_TICK_INTERVAL_MS);
+            }
+        }
+
+        function stop() {
+            if (intervalId !== null) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+
+        start();
+
+        // Pause when tab is hidden so we don't burn battery in the background.
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                stop();
+            } else {
+                start();
+            }
+        });
+    }
+
+    /**
+     * Update the odometer slots to show the given formatted string.
+     * Only digits whose value changed will move. If `animate` is false,
+     * the change snaps without transition (used for the loop reset).
+     *
+     * Rollover handling: when a digit goes 9 -> 0 we animate forward to
+     * the duplicate 0 at position 10, then schedule a silent snap-back
+     * to position 0 once the transition has finished.
+     */
+    function setOdometer(slots, formatted, animate) {
+        let slotIdx = 0;
+        for (let i = 0; i < formatted.length; i++) {
+            const ch = formatted.charAt(i);
+            if (ch < '0' || ch > '9') continue;
+            const newDigit = parseInt(ch, 10);
+            const slot = slots[slotIdx++];
+            if (!slot) break;
+            if (slot.currentDigit === newDigit) continue;
+            const strip = slot.strip;
+
+            // Cancel any pending snap-back from a previous rollover so we
+            // don't clobber a freshly-set transform.
+            if (slot.snapBackTimer !== null) {
+                clearTimeout(slot.snapBackTimer);
+                slot.snapBackTimer = null;
+            }
+
+            const isRollover = slot.currentDigit === 9 && newDigit === 0;
+
+            if (!animate) {
+                // Reset path: snap immediately, no transition.
+                strip.style.transition = 'none';
+                strip.style.transform = 'translateY(-' + newDigit + 'em)';
+                void strip.offsetHeight;
+                strip.style.transition = '';
+            } else if (isRollover) {
+                // Roll forward into the duplicate 0 at position 10, then
+                // snap back to position 0 once the roll has finished.
+                strip.style.transform = 'translateY(-10em)';
+                slot.snapBackTimer = setTimeout(function() {
+                    slot.snapBackTimer = null;
+                    // Defensive: only snap if no later change has happened.
+                    if (slot.currentDigit === 0) {
+                        strip.style.transition = 'none';
+                        strip.style.transform = 'translateY(0em)';
+                        void strip.offsetHeight;
+                        strip.style.transition = '';
+                    }
+                }, 650);
+            } else {
+                strip.style.transform = 'translateY(-' + newDigit + 'em)';
+            }
+            slot.currentDigit = newDigit;
+        }
     }
 
     // ============================================

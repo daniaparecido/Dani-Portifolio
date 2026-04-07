@@ -414,8 +414,12 @@ def parse_formatted_number(s: str) -> int:
     return int(num * multipliers.get(suffix, 1))
 
 
-def fetch_total_youtube_views(credentials_file: str = None, credentials_json: str = None) -> int:
-    """Sum all views from the external YouTube Edited Videos spreadsheet."""
+def fetch_total_youtube_views(credentials_file: str = None, credentials_json: str = None) -> tuple[int, int]:
+    """Sum all views and count all videos from the external YouTube Edited Videos spreadsheet.
+
+    Returns:
+        (total_views, total_videos)
+    """
     try:
         if credentials_json:
             creds_dict = json.loads(credentials_json)
@@ -423,26 +427,29 @@ def fetch_total_youtube_views(credentials_file: str = None, credentials_json: st
         elif credentials_file:
             credentials = Credentials.from_service_account_file(credentials_file, scopes=SCOPES)
         else:
-            return 0
+            return 0, 0
 
         client = gspread.authorize(credentials)
         spreadsheet = client.open_by_key(YOUTUBE_SHEET_ID)
 
-        total = 0
+        total_views = 0
+        total_videos = 0
         for tab_name in YOUTUBE_SHEET_TABS:
             try:
                 ws = spreadsheet.worksheet(tab_name)
                 values = ws.col_values(VIEWS_COLUMN)[1:]  # Skip header
                 tab_total = sum(parse_formatted_number(v) for v in values)
-                print(f"  {tab_name}: {format_count(tab_total)} from {len(values)} videos")
-                total += tab_total
+                tab_count = len(values)
+                print(f"  {tab_name}: {format_count(tab_total)} from {tab_count} videos")
+                total_views += tab_total
+                total_videos += tab_count
             except Exception as e:
                 print(f"  Warning: Could not read tab '{tab_name}' from YouTube sheet: {e}")
 
-        return total
+        return total_views, total_videos
     except Exception as e:
         print(f"  Warning: Could not fetch total YouTube views: {e}")
-        return 0
+        return 0, 0
 
 
 # ============================================
@@ -464,7 +471,7 @@ def escape_js_string(s: str) -> str:
     return s.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
 
 
-def generate_projects_js(projects: list[dict], total_views: int = 0) -> str:
+def generate_projects_js(projects: list[dict], total_views: int = 0, total_videos: int = 0) -> str:
     """Generate the projects.js file content."""
     lines = [
         '/**',
@@ -478,6 +485,7 @@ def generate_projects_js(projects: list[dict], total_views: int = 0) -> str:
         ' */',
         '',
         f'const totalYouTubeViews = {total_views};',
+        f'const totalYouTubeVideos = {total_videos};',
         '',
         'const projects = [',
     ]
@@ -753,19 +761,20 @@ def main():
             projects = process_worksheet(config, ws_name, ws_config, mode, args.dry_run, args.fetch_thumbnails)
             all_projects.extend(projects)
 
-        # Fetch total YouTube views from external sheet
+        # Fetch total YouTube views and video count from external sheet
         print("\nFetching total YouTube views from external spreadsheet...")
-        total_views = fetch_total_youtube_views(
+        total_views, total_videos = fetch_total_youtube_views(
             credentials_file=config["credentials_file"],
             credentials_json=config.get("credentials_json"),
         )
         if total_views > 0:
             print(f"  Total YouTube views: {format_count(total_views)}")
+            print(f"  Total YouTube videos: {total_videos}")
 
         # Generate projects.js
         if all_projects:
             print(f"\nGenerating projects.js with {len(all_projects)} projects...")
-            content = generate_projects_js(all_projects, total_views)
+            content = generate_projects_js(all_projects, total_views, total_videos)
 
             if args.dry_run:
                 print("\n[DRY RUN] Would write:")
