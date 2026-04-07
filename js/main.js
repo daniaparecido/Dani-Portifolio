@@ -66,17 +66,20 @@
                 slot.className = 'odometer-digit';
                 const strip = document.createElement('span');
                 strip.className = 'odometer-strip';
-                for (let d = 0; d <= 9; d++) {
+                // 11 children: 0..9 plus a duplicate 0 at the bottom so a
+                // 9 -> 0 transition can roll FORWARD into the duplicate 0
+                // and then silently snap back to the top 0 for the next tick.
+                for (let d = 0; d <= 10; d++) {
                     const dEl = document.createElement('span');
                     dEl.className = 'odometer-d';
-                    dEl.textContent = String(d);
+                    dEl.textContent = String(d % 10);
                     strip.appendChild(dEl);
                 }
                 slot.appendChild(strip);
                 numberEl.appendChild(slot);
                 const initDigit = parseInt(ch, 10);
                 strip.style.transform = 'translateY(-' + initDigit + 'em)';
-                slots.push({ strip: strip, currentDigit: initDigit });
+                slots.push({ strip: strip, currentDigit: initDigit, snapBackTimer: null });
             } else {
                 const sep = document.createElement('span');
                 sep.className = 'odometer-sep';
@@ -135,6 +138,10 @@
      * Update the odometer slots to show the given formatted string.
      * Only digits whose value changed will move. If `animate` is false,
      * the change snaps without transition (used for the loop reset).
+     *
+     * Rollover handling: when a digit goes 9 -> 0 we animate forward to
+     * the duplicate 0 at position 10, then schedule a silent snap-back
+     * to position 0 once the transition has finished.
      */
     function setOdometer(slots, formatted, animate) {
         let slotIdx = 0;
@@ -146,12 +153,36 @@
             if (!slot) break;
             if (slot.currentDigit === newDigit) continue;
             const strip = slot.strip;
+
+            // Cancel any pending snap-back from a previous rollover so we
+            // don't clobber a freshly-set transform.
+            if (slot.snapBackTimer !== null) {
+                clearTimeout(slot.snapBackTimer);
+                slot.snapBackTimer = null;
+            }
+
+            const isRollover = slot.currentDigit === 9 && newDigit === 0;
+
             if (!animate) {
+                // Reset path: snap immediately, no transition.
                 strip.style.transition = 'none';
                 strip.style.transform = 'translateY(-' + newDigit + 'em)';
-                // Force layout flush before re-enabling transition.
                 void strip.offsetHeight;
                 strip.style.transition = '';
+            } else if (isRollover) {
+                // Roll forward into the duplicate 0 at position 10, then
+                // snap back to position 0 once the roll has finished.
+                strip.style.transform = 'translateY(-10em)';
+                slot.snapBackTimer = setTimeout(function() {
+                    slot.snapBackTimer = null;
+                    // Defensive: only snap if no later change has happened.
+                    if (slot.currentDigit === 0) {
+                        strip.style.transition = 'none';
+                        strip.style.transform = 'translateY(0em)';
+                        void strip.offsetHeight;
+                        strip.style.transition = '';
+                    }
+                }, 650);
             } else {
                 strip.style.transform = 'translateY(-' + newDigit + 'em)';
             }
