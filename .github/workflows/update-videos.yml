@@ -26,11 +26,23 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Write Instagram cookies
+        env:
+          INSTAGRAM_COOKIES: ${{ secrets.INSTAGRAM_COOKIES }}
+        run: |
+          if [ -n "$INSTAGRAM_COOKIES" ]; then
+            printf '%s' "$INSTAGRAM_COOKIES" > cookies.txt
+            echo "Wrote $(wc -c < cookies.txt) bytes to cookies.txt"
+          else
+            echo "INSTAGRAM_COOKIES secret is empty; Instagram refreshes will fail."
+          fi
+
       - name: Refresh video stats
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          COOKIES_FILE: cookies.txt
         run: |
           python scripts/sync_from_sheet.py --refresh
 
