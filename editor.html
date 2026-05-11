@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dani Portfolio Editor</title>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<style>
+:root {
+  --bg: #0f0f12;
+  --panel: #16161b;
+  --panel-2: #1d1d24;
+  --line: #2a2a33;
+  --text: #e6e6ee;
+  --muted: #8a8a99;
+  --accent: #ff5c5c;
+  --accent-2: #6ea8ff;
+  --ok: #46c98b;
+  --warn: #d0a040;
+  --err: #ff5c5c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; }
+button { font: inherit; color: inherit; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+button:hover { background: var(--line); }
+button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+button.primary:hover { filter: brightness(1.1); }
+button.danger { color: var(--err); border-color: transparent; background: transparent; padding: 2px 6px; }
+button.danger:hover { background: rgba(255,92,92,0.15); }
+input[type="text"], input[type="search"] { font: inherit; color: inherit; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; width: 100%; }
+input:focus { outline: none; border-color: var(--accent-2); }
+
+.app { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+.topbar { display: flex; align-items: center; gap: 16px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.topbar h1 { font-size: 16px; margin: 0; font-weight: 600; }
+.topbar .grow { flex: 1; }
+.status { font-size: 12px; color: var(--muted); }
+.status.ok { color: var(--ok); }
+.status.err { color: var(--err); }
+.status.dirty { color: var(--warn); }
+
+.main { display: grid; grid-template-columns: 360px 1fr; gap: 0; overflow: hidden; }
+.pane { overflow-y: auto; padding: 12px; }
+.pane-left { border-right: 1px solid var(--line); background: var(--panel); }
+.pane-right { background: var(--bg); }
+
+.search { position: sticky; top: -12px; background: var(--panel); padding: 8px 0 12px; z-index: 2; }
+.search-meta { font-size: 12px; color: var(--muted); margin: 4px 2px 0; }
+
+.lib-list { display: flex; flex-direction: column; gap: 6px; }
+.lib-card { display: grid; grid-template-columns: 64px 1fr auto; gap: 8px; align-items: center; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px; cursor: grab; user-select: none; }
+.lib-card:hover { border-color: var(--accent-2); }
+.lib-card.sortable-chosen { opacity: 0.6; }
+.lib-card .thumb { width: 64px; height: 36px; object-fit: cover; background: #000; border-radius: 3px; }
+.lib-card .meta { min-width: 0; }
+.lib-card .title { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lib-card .sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lib-card .badge { font-size: 10px; padding: 1px 4px; border-radius: 3px; color: var(--bg); font-weight: 600; }
+.badge.youtube   { background: #ff4d4d; }
+.badge.instagram { background: #c13584; color: white; }
+.badge.tiktok    { background: #25f4ee; color: #000; }
+
+.section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+.section h2 { font-size: 14px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+.section h2 .count { color: var(--muted); font-weight: 400; font-size: 12px; }
+
+.featured-group { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 10px; margin-bottom: 10px; }
+.featured-row { display: grid; grid-template-columns: 220px 1fr auto; gap: 12px; align-items: stretch; }
+.featured-long-slot { background: var(--bg); border: 1px dashed var(--line); border-radius: 4px; padding: 4px; min-height: 80px; }
+.featured-long-slot.has-item { border-style: solid; }
+.featured-shorts-slot { background: var(--bg); border: 1px dashed var(--line); border-radius: 4px; padding: 4px; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; }
+.featured-shorts-slot.has-item { border-style: solid; }
+.featured-group .controls { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.featured-group .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.placed { display: grid; grid-template-columns: 48px 1fr auto; gap: 6px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 4px; min-width: 0; }
+.placed .thumb { width: 48px; height: 28px; object-fit: cover; background: #000; border-radius: 2px; }
+.placed .title { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+.placed.long { grid-template-columns: 80px 1fr auto; }
+.placed.long .thumb { width: 80px; height: 45px; }
+
+.placed-short { width: 60px; height: 80px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; position: relative; overflow: hidden; }
+.placed-short img { width: 100%; height: 100%; object-fit: cover; }
+.placed-short .remove { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 18px; height: 18px; padding: 0; font-size: 12px; line-height: 18px; cursor: pointer; }
+
+.section-list { display: flex; flex-direction: column; gap: 4px; min-height: 60px; padding: 4px; background: var(--bg); border: 1px dashed var(--line); border-radius: 4px; }
+.section-list.has-item { border-style: solid; }
+.section-header { display: flex; align-items: center; gap: 10px; margin: 12px 0 6px; }
+.section-header h3 { font-size: 13px; margin: 0; }
+.section-header .count { color: var(--muted); font-size: 12px; }
+
+.empty-hint { font-size: 11px; color: var(--muted); padding: 8px; text-align: center; }
+.sortable-ghost { opacity: 0.4; }
+.placed.dragging { opacity: 0.5; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <h1>Dani Portfolio Editor</h1>
+    <span id="status" class="status">Loading...</span>
+    <span class="grow"></span>
+    <button id="addFeatured">+ Add featured group</button>
+    <button id="reload">Reload</button>
+    <button id="save" class="primary">Save</button>
+  </div>
+
+  <div class="main">
+    <div class="pane pane-left">
+      <div class="search">
+        <input id="searchInput" type="search" placeholder="Search library (title / channel / id / url)..." autofocus />
+        <div id="searchMeta" class="search-meta"></div>
+      </div>
+      <div id="libList" class="lib-list"></div>
+    </div>
+
+    <div class="pane pane-right">
+      <div class="section">
+        <h2>Featured <span id="featuredCount" class="count">(0)</span></h2>
+        <div id="featuredList"></div>
+        <div class="empty-hint" id="featuredHint">Click "+ Add featured group" to start a hero block. Drag a long-form from the library into the left slot; drag shorts into the right slot.</div>
+      </div>
+
+      <div class="section">
+        <h2>Sections</h2>
+        <div id="sectionsList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const state = {
+  library: [],
+  byId: new Map(),
+  siteConfig: { version: 1, featured: [], sections: [] },
+  dirty: false,
+};
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+function setStatus(text, kind) {
+  const el = $("#status");
+  el.textContent = text;
+  el.className = "status" + (kind ? " " + kind : "");
+}
+function markDirty() {
+  state.dirty = true;
+  setStatus("Unsaved changes", "dirty");
+}
+
+async function load() {
+  setStatus("Loading...");
+  const [libRes, cfgRes] = await Promise.all([
+    fetch("/data/library.json", { cache: "no-store" }),
+    fetch("/data/site-config.json", { cache: "no-store" }),
+  ]);
+  if (!libRes.ok) throw new Error("library.json: " + libRes.status);
+  if (!cfgRes.ok) throw new Error("site-config.json: " + cfgRes.status);
+  const lib = await libRes.json();
+  const cfg = await cfgRes.json();
+  state.library = lib.items || [];
+  state.byId = new Map(state.library.map(it => [it.id, it]));
+  state.siteConfig = cfg;
+  state.dirty = false;
+  renderAll();
+  setStatus(`Loaded ${state.library.length} library items`, "ok");
+}
+
+function renderAll() {
+  renderLibrary();
+  renderFeatured();
+  renderSections();
+}
+
+function thumbUrl(item) {
+  if (!item) return "";
+  if (item.platform === "youtube") return item.thumbnail || `https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`;
+  return item.thumbnail || "";
+}
+
+function libCardHTML(item) {
+  const stats = item.platform === "instagram"
+    ? `${formatCount(item.likes)} likes`
+    : `${formatCount(item.views)} views`;
+  return `
+    <div class="lib-card" draggable="false" data-id="${item.id}">
+      <img class="thumb" src="${thumbUrl(item)}" alt="" loading="lazy" />
+      <div class="meta">
+        <div class="title" title="${escapeAttr(item.title || "")}">${escapeHtml(item.title || item.id)}</div>
+        <div class="sub">${escapeHtml(item.channel || "")} - ${stats}</div>
+      </div>
+      <span class="badge ${item.platform}">${item.platform[0].toUpperCase()}</span>
+    </div>`;
+}
+
+function placedRowHTML(item, variant) {
+  if (!item) return placedEmptyHTML(variant);
+  if (variant === "short") {
+    return `
+      <div class="placed-short" data-id="${item.id}" title="${escapeAttr(item.title || item.id)}">
+        <img src="${thumbUrl(item)}" alt="" loading="lazy" />
+        <button class="remove" data-act="remove" title="Remove">x</button>
+      </div>`;
+  }
+  const klass = variant === "long" ? "placed long" : "placed";
+  return `
+    <div class="${klass}" data-id="${item.id}">
+      <img class="thumb" src="${thumbUrl(item)}" alt="" loading="lazy" />
+      <div class="title" title="${escapeAttr(item.title || "")}">${escapeHtml(item.title || item.id)}</div>
+      <button class="danger" data-act="remove" title="Remove">x</button>
+    </div>`;
+}
+
+function placedEmptyHTML(variant) {
+  return variant === "long"
+    ? `<div class="empty-hint">Drag a long-form here</div>`
+    : `<div class="empty-hint">Drag shorts here</div>`;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+function formatCount(n) {
+  if (n == null) return "-";
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return Math.round(n / 1_000) + "K";
+  return String(n);
+}
+
+function renderLibrary() {
+  const q = ($("#searchInput").value || "").trim().toLowerCase();
+  const list = $("#libList");
+  let filtered = state.library;
+  if (q) {
+    filtered = state.library.filter(it => {
+      const hay = `${it.id} ${it.title || ""} ${it.channel || ""} ${it.url || ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  list.innerHTML = filtered.slice(0, 400).map(libCardHTML).join("");
+  const meta = `${filtered.length} match${filtered.length === 1 ? "" : "es"}` + (filtered.length > 400 ? " (showing 400)" : "");
+  $("#searchMeta").textContent = meta;
+
+  Sortable.create(list, {
+    group: { name: "videos", pull: "clone", put: false },
+    sort: false,
+    animation: 150,
+    forceFallback: false,
+  });
+}
+
+function renderFeatured() {
+  const wrap = $("#featuredList");
+  const groups = state.siteConfig.featured || [];
+  wrap.innerHTML = "";
+  $("#featuredCount").textContent = `(${groups.length})`;
+  $("#featuredHint").style.display = groups.length === 0 ? "block" : "none";
+  groups.forEach((group, idx) => {
+    const long = state.byId.get(group.long_form_id);
+    const node = document.createElement("div");
+    node.className = "featured-group";
+    node.dataset.idx = idx;
+    node.innerHTML = `
+      <div class="featured-row">
+        <div>
+          <div class="label">Long-form</div>
+          <div class="featured-long-slot ${long ? "has-item" : ""}" data-slot="long">
+            ${long ? placedRowHTML(long, "long") : placedEmptyHTML("long")}
+          </div>
+        </div>
+        <div>
+          <div class="label">Shorts (${(group.short_form_ids || []).length})</div>
+          <div class="featured-shorts-slot ${(group.short_form_ids || []).length ? "has-item" : ""}" data-slot="shorts">
+            ${(group.short_form_ids || []).map(id => placedRowHTML(state.byId.get(id), "short")).join("")}
+          </div>
+        </div>
+        <div class="controls">
+          <button class="danger" data-act="remove-group" title="Remove group">x</button>
+        </div>
+      </div>`;
+    wrap.appendChild(node);
+
+    const longSlot = node.querySelector('[data-slot="long"]');
+    Sortable.create(longSlot, {
+      group: { name: "videos", pull: false, put: true },
+      animation: 150,
+      onAdd: (evt) => {
+        const id = evt.item.dataset.id;
+        evt.item.remove();
+        state.siteConfig.featured[idx].long_form_id = id;
+        markDirty();
+        renderFeatured();
+      },
+    });
+
+    const shortsSlot = node.querySelector('[data-slot="shorts"]');
+    Sortable.create(shortsSlot, {
+      group: { name: "videos", pull: false, put: true },
+      animation: 150,
+      onAdd: (evt) => {
+        const id = evt.item.dataset.id;
+        evt.item.remove();
+        const arr = state.siteConfig.featured[idx].short_form_ids || [];
+        if (!arr.includes(id)) arr.splice(evt.newIndex, 0, id);
+        state.siteConfig.featured[idx].short_form_ids = arr;
+        markDirty();
+        renderFeatured();
+      },
+      onEnd: (evt) => {
+        // Reorder existing without add
+        if (evt.from !== evt.to || evt.oldIndex === evt.newIndex) return;
+        const arr = state.siteConfig.featured[idx].short_form_ids || [];
+        const [moved] = arr.splice(evt.oldIndex, 1);
+        arr.splice(evt.newIndex, 0, moved);
+        markDirty();
+      },
+    });
+
+    node.querySelectorAll('[data-act="remove"]').forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const placed = btn.closest("[data-id]");
+        const slot = btn.closest("[data-slot]").dataset.slot;
+        if (slot === "long") {
+          state.siteConfig.featured[idx].long_form_id = "";
+        } else {
+          const id = placed.dataset.id;
+          state.siteConfig.featured[idx].short_form_ids =
+            (state.siteConfig.featured[idx].short_form_ids || []).filter(x => x !== id);
+        }
+        markDirty();
+        renderFeatured();
+      });
+    });
+
+    node.querySelector('[data-act="remove-group"]').addEventListener("click", () => {
+      if (!confirm("Remove this featured group?")) return;
+      state.siteConfig.featured.splice(idx, 1);
+      markDirty();
+      renderFeatured();
+    });
+  });
+}
+
+function renderSections() {
+  const wrap = $("#sectionsList");
+  const sections = state.siteConfig.sections || [];
+  wrap.innerHTML = "";
+  sections.forEach((section, idx) => {
+    const items = (section.video_ids || []).map(id => state.byId.get(id)).filter(Boolean);
+    const node = document.createElement("div");
+    node.innerHTML = `
+      <div class="section-header">
+        <h3>${escapeHtml(section.title)}</h3>
+        <span class="count">${items.length}</span>
+      </div>
+      <div class="section-list ${items.length ? "has-item" : ""}" data-section-idx="${idx}">
+        ${items.map(it => placedRowHTML(it, "row")).join("")}
+      </div>`;
+    wrap.appendChild(node);
+
+    const list = node.querySelector(".section-list");
+    Sortable.create(list, {
+      group: { name: "videos", pull: false, put: true },
+      animation: 150,
+      onAdd: (evt) => {
+        const id = evt.item.dataset.id;
+        evt.item.remove();
+        const arr = state.siteConfig.sections[idx].video_ids || [];
+        if (!arr.includes(id)) arr.splice(evt.newIndex, 0, id);
+        state.siteConfig.sections[idx].video_ids = arr;
+        markDirty();
+        renderSections();
+      },
+      onEnd: (evt) => {
+        if (evt.from !== evt.to || evt.oldIndex === evt.newIndex) return;
+        const arr = state.siteConfig.sections[idx].video_ids || [];
+        const [moved] = arr.splice(evt.oldIndex, 1);
+        arr.splice(evt.newIndex, 0, moved);
+        markDirty();
+      },
+    });
+
+    list.querySelectorAll('[data-act="remove"]').forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.closest("[data-id]").dataset.id;
+        state.siteConfig.sections[idx].video_ids =
+          (state.siteConfig.sections[idx].video_ids || []).filter(x => x !== id);
+        markDirty();
+        renderSections();
+      });
+    });
+  });
+}
+
+async function save() {
+  setStatus("Saving...");
+  try {
+    const res = await fetch("/api/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(state.siteConfig),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setStatus("Save failed: " + (data.error || res.status), "err");
+      return;
+    }
+    state.dirty = false;
+    setStatus(`Saved (featured: ${data.featured}, sections: ${data.sections}, ${data.total_video_ids} videos)`, "ok");
+  } catch (e) {
+    setStatus("Save failed: " + e.message, "err");
+  }
+}
+
+window.addEventListener("beforeunload", (e) => {
+  if (state.dirty) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+$("#searchInput").addEventListener("input", renderLibrary);
+$("#save").addEventListener("click", save);
+$("#reload").addEventListener("click", () => {
+  if (state.dirty && !confirm("Discard unsaved changes?")) return;
+  load();
+});
+$("#addFeatured").addEventListener("click", () => {
+  state.siteConfig.featured = state.siteConfig.featured || [];
+  state.siteConfig.featured.push({ long_form_id: "", short_form_ids: [] });
+  markDirty();
+  renderFeatured();
+});
+
+load().catch(e => setStatus("Load failed: " + e.message, "err"));
+</script>
+</body>
+</html>
