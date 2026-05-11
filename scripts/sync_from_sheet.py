@@ -12,6 +12,7 @@ Modes:
 
 import os
 import re
+import sys
 import json
 import argparse
 from pathlib import Path
@@ -60,6 +61,10 @@ ROOT_DIR = Path(__file__).parent.parent
 PROJECTS_FILE = ROOT_DIR / "js" / "projects.js"
 
 GMT_MINUS_3 = timezone(timedelta(hours=-3))
+
+# Exit non-zero when more than this fraction of Instagram fetches fail.
+# Catches expired cookies (which fail every URL) without flagging one-off flakes.
+INSTAGRAM_FAILURE_THRESHOLD = 0.5
 
 
 def get_timestamp() -> str:
@@ -183,19 +188,31 @@ class SocialMediaClient:
         if cookies_file and os.path.exists(cookies_file):
             self.ydl_opts['cookiefile'] = cookies_file
 
+        self.fetch_results = {
+            "instagram": {"success": 0, "failure": 0},
+            "tiktok": {"success": 0, "failure": 0},
+        }
+
+    def _record(self, platform: str, ok: bool):
+        if platform in self.fetch_results:
+            key = "success" if ok else "failure"
+            self.fetch_results[platform][key] += 1
+
     def get_video_details(self, urls: list[str]) -> dict:
         """Fetch video details using yt-dlp."""
         results = {}
 
         for url in urls:
+            platform = detect_platform(url)
             try:
                 with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
                     info = ydl.extract_info(url, download=False)
 
                     if not info:
+                        self._record(platform, False)
                         continue
 
-                    video_id = extract_video_id(url, detect_platform(url))
+                    video_id = extract_video_id(url, platform)
                     title = info.get("description", info.get("title", "")) or ""
                     title = " ".join(title.split())[:100]  # Clean and truncate
 
@@ -207,11 +224,13 @@ class SocialMediaClient:
                         "channel": info.get("uploader", info.get("channel", "")),
                         "views": int(views),
                         "likes": int(info.get("like_count", 0) or 0),
-                        "platform": detect_platform(url),
+                        "platform": platform,
                         "thumbnail": info.get("thumbnail", ""),
                         "url": url,
                     }
+                    self._record(platform, True)
             except Exception as e:
+                self._record(platform, False)
                 print(f"  Error fetching {url}: {e}")
 
         return results
@@ -221,22 +240,26 @@ class SocialMediaClient:
         results = {}
 
         for url in urls:
+            platform = detect_platform(url)
             try:
                 with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
                     info = ydl.extract_info(url, download=False)
 
                     if not info:
+                        self._record(platform, False)
                         continue
 
-                    video_id = extract_video_id(url, detect_platform(url))
+                    video_id = extract_video_id(url, platform)
                     views = info.get("view_count") or info.get("play_count") or 0
 
                     results[video_id] = {
                         "views": int(views),
                         "likes": int(info.get("like_count", 0) or 0),
-                        "platform": detect_platform(url),
+                        "platform": platform,
                     }
+                    self._record(platform, True)
             except Exception as e:
+                self._record(platform, False)
                 print(f"  Error fetching stats for {url}: {e}")
 
         return results
@@ -561,6 +584,7 @@ def load_config() -> dict:
 
 
 def process_worksheet(config: dict, ws_name: str, ws_config: dict,
+                      youtube_client: "YouTubeClient", social_client: "SocialMediaClient | None",
                       mode: str = "populate", dry_run: bool = False,
                       fetch_thumbnails: bool = False) -> list[dict]:
     """Process a single worksheet and return projects."""
@@ -583,12 +607,6 @@ def process_worksheet(config: dict, ws_name: str, ws_config: dict,
     existing_rows = [r for r in rows if r["has_data"]]
 
     print(f"  Found {len(new_rows)} new URLs, {len(existing_rows)} existing")
-
-    # Initialize clients
-    youtube_client = YouTubeClient(config["youtube_api_key"])
-    social_client = None
-    if HAS_YTDLP:
-        social_client = SocialMediaClient(config.get("cookies_file"))
 
     # Storage for thumbnails fetched during this run
     thumbnails = {}
@@ -757,8 +775,15 @@ def main():
 
         all_projects = []
 
+        # Build clients once so Instagram/TikTok fetch counts accumulate across worksheets
+        youtube_client = YouTubeClient(config["youtube_api_key"])
+        social_client = SocialMediaClient(config.get("cookies_file")) if HAS_YTDLP else None
+
         for ws_name, ws_config in WORKSHEET_CONFIG.items():
-            projects = process_worksheet(config, ws_name, ws_config, mode, args.dry_run, args.fetch_thumbnails)
+            projects = process_worksheet(
+                config, ws_name, ws_config, youtube_client, social_client,
+                mode, args.dry_run, args.fetch_thumbnails,
+            )
             all_projects.extend(projects)
 
         # Fetch total YouTube views and video count from external sheet
@@ -821,6 +846,22 @@ def main():
         print(f"\n{'=' * 50}")
         print("SYNC COMPLETE")
         print(f"{'=' * 50}\n")
+
+        # Surface silent Instagram failures as a non-zero exit so the workflow turns red.
+        # Without this, sessionid expiry leaves the workflow green but stops refreshing views.
+        if social_client:
+            ig = social_client.fetch_results["instagram"]
+            total = ig["success"] + ig["failure"]
+            if total > 0:
+                rate = ig["failure"] / total
+                print(f"Instagram: {ig['success']}/{total} succeeded ({rate * 100:.0f}% failure rate)")
+                if rate > INSTAGRAM_FAILURE_THRESHOLD:
+                    print(
+                        f"ERROR: Instagram failure rate {rate * 100:.0f}% exceeds threshold "
+                        f"{INSTAGRAM_FAILURE_THRESHOLD * 100:.0f}%. Cookies likely expired; "
+                        f"run scripts/refresh-cookies.bat."
+                    )
+                    sys.exit(1)
 
     except Exception as e:
         print(f"\nError: {e}")
