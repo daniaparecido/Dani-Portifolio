@@ -1,35 +1,38 @@
 #!/usr/bin/env python3
 """
-Sync video projects between Google Sheets and the portfolio website.
+Sync video library from the two source Google Sheets to local JSON.
 
-Supports: YouTube, Instagram, TikTok
+Mirror mode (the only mode after the 2026-05-11 redesign): the script reads the
+IG/TikTok library sheet and the YouTube library sheet, builds the full library
+of edited videos as data/library.json, and regenerates the legacy js/projects.js
+filtered down to whichever video IDs are listed in data/visible-ids.json.
 
-Modes:
-  --populate    Fetch all data for new URLs (rows without Video ID)
-  --refresh     Update stats for existing videos
-  --generate    Only generate projects.js from sheet data (no API calls)
+The two source sheets are populated and refreshed by other tooling (the daily
+GitHub Actions runner is purely a mirror here, no API calls, no yt-dlp). When
+Task #6 of the redesign lands, data/visible-ids.json is replaced by a richer
+data/site-config.json that adds featured groupings and section ordering.
+
+Usage:
+    python scripts/sync_from_sheet.py           # default: regenerate JSON + projects.js
+    python scripts/sync_from_sheet.py --dry-run # show what would change, write nothing
+
+Legacy flags (--populate, --refresh, --generate, --download, --fetch-thumbnails)
+are accepted for backward compatibility with .bat wrappers and the /sync-videos
+skill, but they no longer change behavior. Population and refresh happen in the
+source sheets, not here.
 """
 
+import argparse
+import json
 import os
 import re
 import sys
-import json
-import argparse
-from pathlib import Path
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
 from dotenv import load_dotenv
-
-# Google API imports
 from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
 import gspread
-
-# yt-dlp for Instagram/TikTok
-try:
-    import yt_dlp
-    HAS_YTDLP = True
-except ImportError:
-    HAS_YTDLP = False
 
 
 # ============================================
@@ -37,78 +40,102 @@ except ImportError:
 # ============================================
 
 SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/youtube.readonly",
+    "https://www.googleapis.com/auth/spreadsheets.readonly",
 ]
 
-# Sheet column headers per worksheet type
-HEADERS_YOUTUBE = ["URL", "Video ID", "Title", "Channel", "Views", "Last Updated"]
-HEADERS_SOCIAL = ["URL", "Video ID", "Title", "Channel", "Views", "Likes", "Last Updated"]
-
-# External spreadsheets for total view count
-YOUTUBE_SHEET_ID = "157LkGyuY_jMWwTWKu2w4Sh9lw0qHCURXKUufFfgOgqg"
-YOUTUBE_SHEET_TABS = ["Long-form", "Short-form"]
-VIEWS_COLUMN = 6  # Column F (1-indexed)
-
-# Map worksheet names to category and type
-WORKSHEET_CONFIG = {
-    "Long-term": {"category": "long-form", "headers": HEADERS_YOUTUBE, "type": "youtube"},
-    "Short-term": {"category": "short-form", "headers": HEADERS_SOCIAL, "type": "mixed"},
-    "Motion Design": {"category": "motion-design", "headers": HEADERS_YOUTUBE, "type": "youtube"},
-}
-
 ROOT_DIR = Path(__file__).parent.parent
+DATA_DIR = ROOT_DIR / "data"
+LIBRARY_FILE = DATA_DIR / "library.json"
+VISIBLE_IDS_FILE = DATA_DIR / "visible-ids.json"
 PROJECTS_FILE = ROOT_DIR / "js" / "projects.js"
+THUMBS_DIR = ROOT_DIR / "images" / "thumbnails"
+
+YOUTUBE_LIBRARY_ID = "157LkGyuY_jMWwTWKu2w4Sh9lw0qHCURXKUufFfgOgqg"
+IGTT_LIBRARY_ID = "1jVd2XMhOI1MVqV9YtaBMVtXWU7IzkdZNuLYdkI5ZKdQ"
+
+# Per source-tab metadata. category drives which section the video belongs to
+# on the live site; platform is the inferred default for the rows in that tab
+# (validated per-row against the URL, since the IG/TT tab is single-platform too).
+SOURCES = [
+    {"sheet_id": YOUTUBE_LIBRARY_ID, "tab": "Long-form",  "platform": "youtube",   "category": "long-form"},
+    {"sheet_id": YOUTUBE_LIBRARY_ID, "tab": "Short-form", "platform": "youtube",   "category": "short-form"},
+    {"sheet_id": IGTT_LIBRARY_ID,    "tab": "Instagram",  "platform": "instagram", "category": "short-form"},
+    {"sheet_id": IGTT_LIBRARY_ID,    "tab": "TikTok",     "platform": "tiktok",    "category": "short-form"},
+]
 
 GMT_MINUS_3 = timezone(timedelta(hours=-3))
 
-# Exit non-zero when more than this fraction of Instagram fetches fail.
-# Catches expired cookies (which fail every URL) without flagging one-off flakes.
-INSTAGRAM_FAILURE_THRESHOLD = 0.5
-
-
-def get_timestamp() -> str:
-    """Get current timestamp in GMT-3."""
-    return datetime.now(GMT_MINUS_3).strftime("%Y-%m-%d %H:%M")
-
 
 # ============================================
-# Platform Detection
+# Parsers
 # ============================================
 
-def detect_platform(url: str) -> str:
-    """Detect platform from URL."""
-    url_lower = url.lower()
-    if "youtube.com" in url_lower or "youtu.be" in url_lower:
-        return "youtube"
-    elif "instagram.com" in url_lower:
-        return "instagram"
-    elif "tiktok.com" in url_lower:
-        return "tiktok"
-    return "unknown"
+def parse_count(s):
+    """Parse '4,5 M' / '36 k' / '229' / '' into an int or None.
+
+    Comma is the decimal separator (Brazilian formatting). 'k' = 1e3, 'M' = 1e6.
+    Empty / unparseable returns None so the front-end can distinguish "missing"
+    from "zero" (notably Instagram has no Views column at all).
+    """
+    if s is None:
+        return None
+    s = str(s).strip().lower()
+    if not s:
+        return None
+    plain = s.replace(",", "").replace(".", "").replace(" ", "")
+    if plain.isdigit():
+        return int(plain)
+    match = re.match(r"([\d.,]+)\s*([kmb])?", s)
+    if not match:
+        return None
+    try:
+        num = float(match.group(1).replace(",", "."))
+    except ValueError:
+        return None
+    suffix = match.group(2) or ""
+    return int(num * {"k": 1_000, "m": 1_000_000, "b": 1_000_000_000}.get(suffix, 1))
 
 
-def extract_video_id(url: str, platform: str) -> str | None:
-    """Extract video ID based on platform."""
+def parse_duration(s):
+    """Parse 'MM:SS' or 'HH:MM:SS' into total seconds. Empty returns None."""
+    if not s:
+        return None
+    parts = str(s).strip().split(":")
+    try:
+        nums = [int(p) for p in parts]
+    except ValueError:
+        return None
+    if len(nums) == 2:
+        return nums[0] * 60 + nums[1]
+    if len(nums) == 3:
+        return nums[0] * 3600 + nums[1] * 60 + nums[2]
+    return None
+
+
+def parse_published(s):
+    """Parse 'DD/MM/YYYY' Brazilian format into ISO 'YYYY-MM-DD'."""
+    if not s:
+        return None
+    s = str(s).strip()
+    try:
+        return datetime.strptime(s, "%d/%m/%Y").strftime("%Y-%m-%d")
+    except ValueError:
+        return None
+
+
+def extract_video_id(url, platform):
+    """Pull the canonical platform-specific ID out of a URL."""
     if platform == "youtube":
         patterns = [
             r"(?:v=|/v/|youtu\.be/|/embed/|/shorts/)([a-zA-Z0-9_-]{11})",
             r"^([a-zA-Z0-9_-]{11})$",
         ]
     elif platform == "instagram":
-        patterns = [
-            r'/reel/([A-Za-z0-9_-]+)',
-            r'/p/([A-Za-z0-9_-]+)',
-            r'/reels/([A-Za-z0-9_-]+)',
-        ]
+        patterns = [r"/reel/([A-Za-z0-9_-]+)", r"/p/([A-Za-z0-9_-]+)", r"/reels/([A-Za-z0-9_-]+)"]
     elif platform == "tiktok":
-        patterns = [
-            r'/video/(\d+)',
-            r'/v/(\d+)',
-        ]
+        patterns = [r"/video/(\d+)", r"/v/(\d+)"]
     else:
         return None
-
     for pattern in patterns:
         match = re.search(pattern, url)
         if match:
@@ -116,756 +143,261 @@ def extract_video_id(url: str, platform: str) -> str | None:
     return None
 
 
-# ============================================
-# YouTube Client
-# ============================================
-
-class YouTubeClient:
-    def __init__(self, api_key: str):
-        self.youtube = build("youtube", "v3", developerKey=api_key)
-
-    def get_video_details(self, video_ids: list[str]) -> dict:
-        """Fetch full video details from YouTube API."""
-        results = {}
-        for i in range(0, len(video_ids), 50):
-            batch = video_ids[i:i + 50]
-            request = self.youtube.videos().list(
-                part="snippet,statistics",
-                id=",".join(batch)
-            )
-            response = request.execute()
-
-            for item in response.get("items", []):
-                video_id = item["id"]
-                snippet = item["snippet"]
-                stats = item.get("statistics", {})
-
-                results[video_id] = {
-                    "title": snippet.get("title", ""),
-                    "channel": snippet.get("channelTitle", ""),
-                    "views": int(stats.get("viewCount", 0)),
-                    "likes": int(stats.get("likeCount", 0)),
-                }
-        return results
-
-    def get_video_stats(self, video_ids: list[str]) -> dict:
-        """Fetch only statistics."""
-        results = {}
-        for i in range(0, len(video_ids), 50):
-            batch = video_ids[i:i + 50]
-            request = self.youtube.videos().list(
-                part="statistics",
-                id=",".join(batch)
-            )
-            response = request.execute()
-
-            for item in response.get("items", []):
-                video_id = item["id"]
-                stats = item.get("statistics", {})
-                results[video_id] = {
-                    "views": int(stats.get("viewCount", 0)),
-                    "likes": int(stats.get("likeCount", 0)),
-                }
-        return results
+def get_timestamp():
+    return datetime.now(GMT_MINUS_3).strftime("%Y-%m-%d %H:%M")
 
 
 # ============================================
-# Social Media Client (Instagram/TikTok via yt-dlp)
+# Auth + sheet reading
 # ============================================
 
-class SocialMediaClient:
-    def __init__(self, cookies_file: str = None):
-        if not HAS_YTDLP:
-            raise ImportError("yt-dlp is required for Instagram/TikTok. Install with: pip install yt-dlp")
-
-        self.ydl_opts = {
-            'quiet': True,
-            'no_warnings': True,
-            'extract_flat': False,
-            'skip_download': True,
-        }
-
-        if cookies_file and os.path.exists(cookies_file):
-            self.ydl_opts['cookiefile'] = cookies_file
-
-        self.fetch_results = {
-            "instagram": {"success": 0, "failure": 0},
-            "tiktok": {"success": 0, "failure": 0},
-        }
-
-    def _record(self, platform: str, ok: bool):
-        if platform in self.fetch_results:
-            key = "success" if ok else "failure"
-            self.fetch_results[platform][key] += 1
-
-    def get_video_details(self, urls: list[str]) -> dict:
-        """Fetch video details using yt-dlp."""
-        results = {}
-
-        for url in urls:
-            platform = detect_platform(url)
-            try:
-                with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
-                    info = ydl.extract_info(url, download=False)
-
-                    if not info:
-                        self._record(platform, False)
-                        continue
-
-                    video_id = extract_video_id(url, platform)
-                    title = info.get("description", info.get("title", "")) or ""
-                    title = " ".join(title.split())[:100]  # Clean and truncate
-
-                    # Instagram uses play_count for reels, view_count for videos
-                    views = info.get("view_count") or info.get("play_count") or 0
-
-                    results[video_id] = {
-                        "title": title if title else info.get("title", ""),
-                        "channel": info.get("uploader", info.get("channel", "")),
-                        "views": int(views),
-                        "likes": int(info.get("like_count", 0) or 0),
-                        "platform": platform,
-                        "thumbnail": info.get("thumbnail", ""),
-                        "url": url,
-                    }
-                    self._record(platform, True)
-            except Exception as e:
-                self._record(platform, False)
-                print(f"  Error fetching {url}: {e}")
-
-        return results
-
-    def get_video_stats(self, urls: list[str]) -> dict:
-        """Fetch only stats using yt-dlp."""
-        results = {}
-
-        for url in urls:
-            platform = detect_platform(url)
-            try:
-                with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
-                    info = ydl.extract_info(url, download=False)
-
-                    if not info:
-                        self._record(platform, False)
-                        continue
-
-                    video_id = extract_video_id(url, platform)
-                    views = info.get("view_count") or info.get("play_count") or 0
-
-                    results[video_id] = {
-                        "views": int(views),
-                        "likes": int(info.get("like_count", 0) or 0),
-                        "platform": platform,
-                    }
-                    self._record(platform, True)
-            except Exception as e:
-                self._record(platform, False)
-                print(f"  Error fetching stats for {url}: {e}")
-
-        return results
+def authorize():
+    load_dotenv(ROOT_DIR / ".env")
+    creds_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+    creds_file = os.environ.get("GOOGLE_SERVICE_ACCOUNT_FILE")
+    if creds_file and not os.path.isabs(creds_file):
+        creds_file = str(ROOT_DIR / creds_file)
+    if creds_json:
+        creds = Credentials.from_service_account_info(json.loads(creds_json), scopes=SCOPES)
+    elif creds_file and os.path.exists(creds_file):
+        creds = Credentials.from_service_account_file(creds_file, scopes=SCOPES)
+    else:
+        sys.exit("ERROR: set GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_SERVICE_ACCOUNT_FILE in .env")
+    return gspread.authorize(creds)
 
 
-# ============================================
-# Google Sheets Client
-# ============================================
+def read_source(client, source):
+    """Read one (sheet, tab) and yield library item dicts."""
+    spreadsheet = client.open_by_key(source["sheet_id"])
+    ws = spreadsheet.worksheet(source["tab"])
+    rows = ws.get_all_values()
+    if not rows:
+        return []
+    header = [h.strip() for h in rows[0]]
 
-class SheetsClient:
-    def __init__(self, sheet_id: str, worksheet_name: str, headers: list[str],
-                 credentials_file: str = None, credentials_json: str = None):
-        if credentials_json:
-            creds_dict = json.loads(credentials_json)
-            credentials = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
-        elif credentials_file:
-            credentials = Credentials.from_service_account_file(credentials_file, scopes=SCOPES)
-        else:
-            raise ValueError("Either credentials_file or credentials_json must be provided")
-
-        self.client = gspread.authorize(credentials)
-        self.spreadsheet = self.client.open_by_key(sheet_id)
-        self.worksheet_name = worksheet_name
-        self.headers = headers
-        self.has_likes = "Likes" in headers
-        self.worksheet = self._get_or_create_worksheet()
-
-    def _get_or_create_worksheet(self) -> gspread.Worksheet:
-        """Get worksheet by name or create it with headers."""
+    def col(name):
         try:
-            worksheet = self.spreadsheet.worksheet(self.worksheet_name)
-        except gspread.WorksheetNotFound:
-            worksheet = self.spreadsheet.add_worksheet(
-                title=self.worksheet_name, rows=1000, cols=len(self.headers)
-            )
-            worksheet.update("A1", [self.headers])
-            print(f"  Created worksheet '{self.worksheet_name}' with headers")
-        return worksheet
+            return header.index(name)
+        except ValueError:
+            return None
 
-    def ensure_headers(self):
-        """Ensure the worksheet has correct headers."""
-        current_headers = self.worksheet.row_values(1)
-        if current_headers != self.headers:
-            self.worksheet.update("A1", [self.headers])
-            print(f"  Updated headers in '{self.worksheet_name}'")
+    idx = {k: col(k) for k in ["URL", "Video ID", "Title", "Channel", "Duration",
+                                "Views", "Likes", "Comments", "Published",
+                                "Thumbnail", "Last Updated"]}
 
-    def get_all_rows(self) -> list[dict]:
-        """Get all rows with data."""
-        all_values = self.worksheet.get_all_values()
-        rows = []
+    def cell(row, key):
+        i = idx.get(key)
+        if i is None or i >= len(row):
+            return ""
+        return row[i].strip()
 
-        for idx, row in enumerate(all_values[1:], start=2):  # Skip header
-            url = row[0] if len(row) > 0 else ""
-            if not url.strip():
-                continue
+    items = []
+    for row in rows[1:]:
+        url = cell(row, "URL")
+        if not url:
+            continue
+        platform = source["platform"]
+        video_id = cell(row, "Video ID") or extract_video_id(url, platform)
+        if not video_id:
+            continue
 
-            if self.has_likes:
-                # Social format: URL, Video ID, Title, Channel, Views, Likes, Last Updated
-                rows.append({
-                    "row_num": idx,
-                    "url": url.strip(),
-                    "video_id": row[1].strip() if len(row) > 1 else "",
-                    "title": row[2] if len(row) > 2 else "",
-                    "channel": row[3] if len(row) > 3 else "",
-                    "views": int(row[4]) if len(row) > 4 and row[4].isdigit() else 0,
-                    "likes": int(row[5]) if len(row) > 5 and row[5].isdigit() else 0,
-                    "has_data": len(row) > 1 and row[1].strip() != "",
-                    "platform": detect_platform(url),
-                })
-            else:
-                # YouTube format: URL, Video ID, Title, Channel, Views, Last Updated
-                rows.append({
-                    "row_num": idx,
-                    "url": url.strip(),
-                    "video_id": row[1].strip() if len(row) > 1 else "",
-                    "title": row[2] if len(row) > 2 else "",
-                    "channel": row[3] if len(row) > 3 else "",
-                    "views": int(row[4]) if len(row) > 4 and row[4].isdigit() else 0,
-                    "likes": 0,
-                    "has_data": len(row) > 1 and row[1].strip() != "",
-                    "platform": "youtube",
-                })
-        return rows
-
-    def batch_update_full(self, updates: list[tuple[int, dict]]):
-        """Update full row data."""
-        timestamp = get_timestamp()
-        batch_data = []
-
-        for row_num, data in updates:
-            if self.has_likes:
-                row_values = [
-                    data.get("url", ""),
-                    data.get("video_id", ""),
-                    data.get("title", ""),
-                    data.get("channel", ""),
-                    data.get("views", 0),
-                    data.get("likes", 0),
-                    timestamp,
-                ]
-                end_col = "G"
-            else:
-                row_values = [
-                    data.get("url", ""),
-                    data.get("video_id", ""),
-                    data.get("title", ""),
-                    data.get("channel", ""),
-                    data.get("views", 0),
-                    timestamp,
-                ]
-                end_col = "F"
-
-            batch_data.append({
-                "range": f"A{row_num}:{end_col}{row_num}",
-                "values": [row_values]
-            })
-
-        if batch_data:
-            self.worksheet.batch_update(batch_data, value_input_option='USER_ENTERED')
-            print(f"  Updated {len(updates)} rows in '{self.worksheet_name}'")
-
-    def batch_update_stats(self, updates: list[tuple[int, dict]]):
-        """Update only stats and timestamp."""
-        timestamp = get_timestamp()
-        batch_data = []
-
-        for row_num, data in updates:
-            if self.has_likes:
-                # Update Views (E), Likes (F), Last Updated (G)
-                batch_data.append({
-                    "range": f"E{row_num}:G{row_num}",
-                    "values": [[data.get("views", 0), data.get("likes", 0), timestamp]]
-                })
-            else:
-                # Update Views (E), Last Updated (F)
-                batch_data.append({
-                    "range": f"E{row_num}:F{row_num}",
-                    "values": [[data.get("views", 0), timestamp]]
-                })
-
-        if batch_data:
-            self.worksheet.batch_update(batch_data, value_input_option='USER_ENTERED')
-            print(f"  Updated stats for {len(updates)} rows in '{self.worksheet_name}'")
-
-
-# ============================================
-# Total View Count (from external YouTube sheet)
-# ============================================
-
-def parse_formatted_number(s: str) -> int:
-    """Parse a formatted number like '364 k', '1,8 M', '474' into an integer."""
-    s = s.strip().lower()
-    if not s:
-        return 0
-
-    # Try plain integer first
-    plain = s.replace(",", "").replace(".", "")
-    if plain.isdigit():
-        return int(plain)
-
-    # Parse "364 k", "1,8 M" etc. (Brazilian locale uses comma as decimal)
-    match = re.match(r'([\d.,]+)\s*(k|m|b)?', s, re.IGNORECASE)
-    if not match:
-        return 0
-
-    num_str = match.group(1).replace(",", ".")  # Convert Brazilian decimal to standard
-    suffix = (match.group(2) or "").lower()
-
-    try:
-        num = float(num_str)
-    except ValueError:
-        return 0
-
-    multipliers = {"k": 1_000, "m": 1_000_000, "b": 1_000_000_000}
-    return int(num * multipliers.get(suffix, 1))
-
-
-def fetch_total_youtube_views(credentials_file: str = None, credentials_json: str = None) -> tuple[int, int]:
-    """Sum all views and count all videos from the external YouTube Edited Videos spreadsheet.
-
-    Returns:
-        (total_views, total_videos)
-    """
-    try:
-        if credentials_json:
-            creds_dict = json.loads(credentials_json)
-            credentials = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
-        elif credentials_file:
-            credentials = Credentials.from_service_account_file(credentials_file, scopes=SCOPES)
+        # Prefer a local thumbnail if one is on disk; only IG/TT bother
+        # downloading these locally (YouTube uses the stable CDN URL directly).
+        local_thumb = THUMBS_DIR / f"{video_id}.jpg"
+        if platform == "youtube":
+            thumbnail = f"https://i.ytimg.com/vi/{video_id}/maxresdefault.jpg"
+        elif local_thumb.exists():
+            thumbnail = f"images/thumbnails/{video_id}.jpg"
         else:
-            return 0, 0
+            thumbnail = cell(row, "Thumbnail") or None
 
-        client = gspread.authorize(credentials)
-        spreadsheet = client.open_by_key(YOUTUBE_SHEET_ID)
+        items.append({
+            "id": video_id,
+            "platform": platform,
+            "category": source["category"],
+            "url": url,
+            "title": cell(row, "Title"),
+            "channel": cell(row, "Channel"),
+            "duration_sec": parse_duration(cell(row, "Duration")),
+            "views": parse_count(cell(row, "Views")) if idx.get("Views") is not None else None,
+            "likes": parse_count(cell(row, "Likes")),
+            "comments": parse_count(cell(row, "Comments")),
+            "published": parse_published(cell(row, "Published")),
+            "thumbnail": thumbnail,
+            "last_updated": cell(row, "Last Updated") or None,
+        })
+    return items
 
-        total_views = 0
-        total_videos = 0
-        for tab_name in YOUTUBE_SHEET_TABS:
-            try:
-                ws = spreadsheet.worksheet(tab_name)
-                values = ws.col_values(VIEWS_COLUMN)[1:]  # Skip header
-                tab_total = sum(parse_formatted_number(v) for v in values)
-                tab_count = len(values)
-                print(f"  {tab_name}: {format_count(tab_total)} from {tab_count} videos")
-                total_views += tab_total
-                total_videos += tab_count
-            except Exception as e:
-                print(f"  Warning: Could not read tab '{tab_name}' from YouTube sheet: {e}")
 
-        return total_views, total_videos
-    except Exception as e:
-        print(f"  Warning: Could not fetch total YouTube views: {e}")
-        return 0, 0
+def build_library(client):
+    """Read every source and return a deduped library list."""
+    seen_ids = {}
+    library = []
+    for source in SOURCES:
+        label = f"{source['platform']}/{source['tab']}"
+        try:
+            items = read_source(client, source)
+        except Exception as e:
+            print(f"  WARNING: failed to read {label}: {e}")
+            continue
+        print(f"  {label}: {len(items)} items")
+        for item in items:
+            key = item["id"]
+            if key in seen_ids:
+                # Collision = same video listed in two tabs. Keep the first,
+                # report so the source sheet can be cleaned up.
+                print(f"    duplicate id {key} ({label}); keeping first occurrence")
+                continue
+            seen_ids[key] = True
+            library.append(item)
+    return library
 
 
 # ============================================
-# Projects.js Generator
+# Output: library.json + projects.js
 # ============================================
 
-def format_count(count: int, label: str = "views") -> str:
-    """Format count for display."""
+def write_library_json(library, dry_run=False):
+    payload = {
+        "generated_at": datetime.now(GMT_MINUS_3).isoformat(timespec="seconds"),
+        "count": len(library),
+        "items": library,
+    }
+    if dry_run:
+        print(f"[DRY RUN] Would write {len(library)} items to {LIBRARY_FILE}")
+        return
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    LIBRARY_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Wrote {len(library)} items to {LIBRARY_FILE}")
+
+
+def format_count_display(count, label="views"):
+    if count is None:
+        return ""
     if count >= 1_000_000:
         return f"{count / 1_000_000:.1f}M {label}"
-    elif count >= 1_000:
+    if count >= 1_000:
         return f"{count / 1_000:.0f}K {label}"
-    else:
-        return f"{count} {label}"
+    return f"{count} {label}"
 
 
-def escape_js_string(s: str) -> str:
-    """Escape special characters for JavaScript strings."""
-    return s.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
+def escape_js(s):
+    return (s or "").replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
 
-def generate_projects_js(projects: list[dict], total_views: int = 0, total_videos: int = 0) -> str:
-    """Generate the projects.js file content."""
+def generate_projects_js(library, visible, totals):
+    """Build js/projects.js from the legacy-shaped projects array,
+    filtered to whatever data/visible-ids.json marks as visible."""
+    by_id = {item["id"]: item for item in library}
+    ordered = []
+    missing = []
+    for category, ids in visible.items():
+        if category.startswith("_") or not isinstance(ids, list):
+            continue
+        for vid in ids:
+            item = by_id.get(vid)
+            if item is None:
+                missing.append((category, vid))
+                continue
+            ordered.append((category, item))
+    if missing:
+        for category, vid in missing:
+            print(f"  WARNING: visible id {vid} ({category}) not found in library")
+
     lines = [
-        '/**',
-        ' * ============================================',
-        ' * PROJECT DATA - AUTO-GENERATED FROM GOOGLE SHEETS',
-        ' * ============================================',
-        ' *',
-        ' * To update this file, run: python scripts/sync_from_sheet.py',
-        ' * Or use the /sync-videos skill in Claude Code',
-        f' * Last updated: {get_timestamp()}',
-        ' */',
-        '',
-        f'const totalYouTubeViews = {total_views};',
-        f'const totalYouTubeVideos = {total_videos};',
-        '',
-        'const projects = [',
+        "/**",
+        " * ============================================",
+        " * PROJECT DATA - AUTO-GENERATED FROM GOOGLE SHEETS",
+        " * ============================================",
+        " *",
+        " * Source: data/library.json (full library) filtered by data/visible-ids.json.",
+        " * To regenerate, run: python scripts/sync_from_sheet.py",
+        f" * Last updated: {get_timestamp()}",
+        " */",
+        "",
+        f"const totalYouTubeViews = {totals['views']};",
+        f"const totalYouTubeVideos = {totals['videos']};",
+        "",
+        "const projects = [",
     ]
-
-    for project in projects:
-        platform = project.get("platform", "youtube")
-
-        # For Instagram, use likes instead of views
-        if platform == "instagram" and project.get("views", 0) == 0:
-            view_count = format_count(project.get("likes", 0), "likes")
+    for category, item in ordered:
+        platform = item["platform"]
+        if platform == "instagram":
+            display = format_count_display(item.get("likes"), "likes")
         else:
-            view_count = format_count(project.get("views", 0), "views")
+            display = format_count_display(item.get("views"), "views")
+        thumbnail = "" if platform == "youtube" else (item.get("thumbnail") or "")
+        lines += [
+            "    {",
+            f'        title: "{escape_js(item.get("title", ""))}",',
+            f'        category: "{category}",',
+            f'        videoId: "{item["id"]}",',
+            f'        platform: "{platform}",',
+            f'        channelName: "{escape_js(item.get("channel", ""))}",',
+            f'        viewCount: "{display}",',
+            f'        thumbnail: "{thumbnail}",',
+            f'        url: "{item.get("url", "")}",',
+            f'        previewVideo: "videos/previews/{item["id"]}.mp4"',
+            "    },",
+        ]
+    lines += ["];", ""]
+    return "\n".join(lines)
 
-        # Build thumbnail URL
-        thumbnail = project.get("thumbnail", "")
 
-        # Build video URL for non-YouTube platforms
-        video_url = project.get("url", "")
+def compute_youtube_totals(library):
+    """Total YouTube views + count across the full library (both Long-form and
+    Short-form). Matches the meaning of the existing totalYouTubeViews global."""
+    yt = [item for item in library if item["platform"] == "youtube"]
+    total_views = sum(item["views"] for item in yt if item.get("views"))
+    return {"views": total_views, "videos": len(yt)}
 
-        lines.append('    {')
-        lines.append(f'        title: "{escape_js_string(project["title"])}",')
-        lines.append(f'        category: "{project["category"]}",')
-        lines.append(f'        videoId: "{project["youtubeId"]}",')
-        lines.append(f'        platform: "{platform}",')
-        lines.append(f'        channelName: "{escape_js_string(project["channelName"])}",')
-        lines.append(f'        viewCount: "{view_count}",')
-        lines.append(f'        thumbnail: "{thumbnail}",')
-        lines.append(f'        url: "{video_url}",')
-        lines.append(f'        previewVideo: "videos/previews/{project["youtubeId"]}.mp4"')
-        lines.append('    },')
 
-    lines.append('];')
-    lines.append('')
-
-    return '\n'.join(lines)
+def load_visible_ids():
+    if not VISIBLE_IDS_FILE.exists():
+        print(f"  visible-ids.json not found at {VISIBLE_IDS_FILE}; projects.js will be empty")
+        return {}
+    return json.loads(VISIBLE_IDS_FILE.read_text(encoding="utf-8"))
 
 
 # ============================================
-# Main Logic
+# Main
 # ============================================
-
-def load_config() -> dict:
-    """Load configuration from environment variables."""
-    load_dotenv(ROOT_DIR / ".env")
-
-    config = {
-        "youtube_api_key": os.getenv("YOUTUBE_API_KEY"),
-        "google_sheet_id": os.getenv("GOOGLE_SHEET_ID"),
-        "credentials_file": os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE"),
-        "credentials_json": os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON"),
-        "cookies_file": os.getenv("COOKIES_FILE", str(ROOT_DIR / "cookies.txt")),
-    }
-
-    # Resolve relative paths
-    if config["credentials_file"] and not os.path.isabs(config["credentials_file"]):
-        config["credentials_file"] = str(ROOT_DIR / config["credentials_file"])
-
-    # Validate
-    if not config["credentials_file"] and not config["credentials_json"]:
-        raise ValueError("Either GOOGLE_SERVICE_ACCOUNT_FILE or GOOGLE_SERVICE_ACCOUNT_JSON required")
-
-    if config["credentials_file"] and not os.path.exists(config["credentials_file"]):
-        if not config["credentials_json"]:
-            raise FileNotFoundError(f"Service account file not found: {config['credentials_file']}")
-
-    if not config["youtube_api_key"]:
-        raise ValueError("YOUTUBE_API_KEY is required")
-
-    if not config["google_sheet_id"]:
-        raise ValueError("GOOGLE_SHEET_ID is required")
-
-    return config
-
-
-def process_worksheet(config: dict, ws_name: str, ws_config: dict,
-                      youtube_client: "YouTubeClient", social_client: "SocialMediaClient | None",
-                      mode: str = "populate", dry_run: bool = False,
-                      fetch_thumbnails: bool = False) -> list[dict]:
-    """Process a single worksheet and return projects."""
-    print(f"\nProcessing: {ws_name}")
-
-    category = ws_config["category"]
-    headers = ws_config["headers"]
-
-    sheets = SheetsClient(
-        sheet_id=config["google_sheet_id"],
-        worksheet_name=ws_name,
-        headers=headers,
-        credentials_file=config["credentials_file"],
-        credentials_json=config.get("credentials_json"),
-    )
-    sheets.ensure_headers()
-
-    rows = sheets.get_all_rows()
-    new_rows = [r for r in rows if not r["has_data"]]
-    existing_rows = [r for r in rows if r["has_data"]]
-
-    print(f"  Found {len(new_rows)} new URLs, {len(existing_rows)} existing")
-
-    # Storage for thumbnails fetched during this run
-    thumbnails = {}
-
-    # Process based on mode
-    if mode == "populate" and new_rows:
-        # Group by platform
-        youtube_rows = [r for r in new_rows if r["platform"] == "youtube"]
-        social_rows = [r for r in new_rows if r["platform"] in ("instagram", "tiktok")]
-
-        updates = []
-
-        # Process YouTube
-        if youtube_rows:
-            video_ids = []
-            row_map = {}
-            for row in youtube_rows:
-                vid = extract_video_id(row["url"], "youtube")
-                if vid:
-                    video_ids.append(vid)
-                    row_map[vid] = row
-
-            if video_ids:
-                print(f"  Fetching YouTube metadata for {len(video_ids)} videos...")
-                details = youtube_client.get_video_details(video_ids)
-
-                for vid, data in details.items():
-                    row = row_map[vid]
-                    updates.append((row["row_num"], {
-                        "url": row["url"],
-                        "video_id": vid,
-                        "title": data["title"],
-                        "channel": data["channel"],
-                        "views": data["views"],
-                        "likes": data.get("likes", 0),
-                    }))
-
-        # Process Instagram/TikTok
-        if social_rows and social_client:
-            print(f"  Fetching social media metadata for {len(social_rows)} videos...")
-            urls = [r["url"] for r in social_rows]
-            details = social_client.get_video_details(urls)
-
-            for row in social_rows:
-                vid = extract_video_id(row["url"], row["platform"])
-                if vid and vid in details:
-                    data = details[vid]
-                    # Store thumbnail for later use
-                    if data.get("thumbnail"):
-                        thumbnails[vid] = data["thumbnail"]
-                    updates.append((row["row_num"], {
-                        "url": row["url"],
-                        "video_id": vid,
-                        "title": data["title"],
-                        "channel": data["channel"],
-                        "views": data["views"],
-                        "likes": data.get("likes", 0),
-                    }))
-
-        if updates and not dry_run:
-            sheets.batch_update_full(updates)
-
-    elif mode == "refresh" and existing_rows:
-        # Group by platform
-        youtube_rows = [r for r in existing_rows if r["platform"] == "youtube"]
-        social_rows = [r for r in existing_rows if r["platform"] in ("instagram", "tiktok")]
-
-        updates = []
-
-        # Refresh YouTube
-        if youtube_rows:
-            video_ids = [r["video_id"] for r in youtube_rows]
-            row_map = {r["video_id"]: r for r in youtube_rows}
-
-            print(f"  Refreshing YouTube stats for {len(video_ids)} videos...")
-            stats = youtube_client.get_video_stats(video_ids)
-
-            for vid, data in stats.items():
-                row = row_map[vid]
-                row["views"] = data["views"]
-                row["likes"] = data.get("likes", 0)
-                updates.append((row["row_num"], data))
-
-        # Refresh social media
-        if social_rows and social_client:
-            print(f"  Refreshing social media stats for {len(social_rows)} videos...")
-            urls = [r["url"] for r in social_rows]
-            stats = social_client.get_video_stats(urls)
-
-            for row in social_rows:
-                vid = row["video_id"]
-                if vid in stats:
-                    data = stats[vid]
-                    row["views"] = data["views"]
-                    row["likes"] = data.get("likes", 0)
-                    updates.append((row["row_num"], data))
-
-        if updates and not dry_run:
-            sheets.batch_update_stats(updates)
-
-    # Fetch thumbnails for social media videos if requested
-    if fetch_thumbnails and social_client:
-        social_existing = [r for r in existing_rows if r["platform"] in ("instagram", "tiktok")]
-        if social_existing:
-            print(f"  Fetching thumbnails for {len(social_existing)} social media videos...")
-            urls = [r["url"] for r in social_existing]
-            details = social_client.get_video_details(urls)
-            for vid, data in details.items():
-                if data.get("thumbnail"):
-                    thumbnails[vid] = data["thumbnail"]
-
-    # Re-fetch rows after updates
-    if mode != "generate":
-        rows = sheets.get_all_rows()
-
-    # Build projects list
-    projects = []
-    for row in rows:
-        if row["has_data"]:
-            # Use fetched thumbnail if available
-            thumbnail = thumbnails.get(row["video_id"], row.get("thumbnail", ""))
-            projects.append({
-                "title": row["title"],
-                "category": category,
-                "youtubeId": row["video_id"],
-                "channelName": row["channel"],
-                "views": row["views"],
-                "likes": row.get("likes", 0),
-                "platform": row.get("platform", "youtube"),
-                "thumbnail": thumbnail,
-                "url": row.get("url", ""),
-            })
-
-    return projects
-
 
 def main():
-    parser = argparse.ArgumentParser(description="Sync videos from Google Sheets")
-    parser.add_argument("--populate", action="store_true",
-                        help="Fetch full data for new URLs")
-    parser.add_argument("--refresh", action="store_true",
-                        help="Update stats for existing videos")
-    parser.add_argument("--generate", action="store_true",
-                        help="Only generate projects.js (no API calls)")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Show what would be done without making changes")
-    parser.add_argument("--fetch-thumbnails", action="store_true",
-                        help="Fetch thumbnails for Instagram/TikTok videos")
-    parser.add_argument("--download", action="store_true",
-                        help="Also download/process preview videos")
-
+    parser = argparse.ArgumentParser(description="Sync videos from library Google Sheets")
+    # Legacy flags kept for back-compat with .bat wrappers and the /sync-videos
+    # skill. They no longer change behavior.
+    parser.add_argument("--populate", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--refresh",  action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--generate", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--download", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--fetch-thumbnails", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--dry-run", action="store_true", help="Print what would change, write nothing")
     args = parser.parse_args()
 
-    # Default to populate if no mode specified
-    if not args.populate and not args.refresh and not args.generate:
-        args.populate = True
+    print("=" * 50)
+    print("SYNC LIBRARY (mirror mode)")
+    print("=" * 50)
 
-    mode = "generate" if args.generate else ("refresh" if args.refresh else "populate")
+    client = authorize()
+    print("\nReading source sheets:")
+    library = build_library(client)
+    library.sort(key=lambda it: (it["category"], it["platform"], -(it.get("views") or 0)))
 
-    try:
-        config = load_config()
-        print(f"\n{'=' * 50}")
-        print(f"SYNC VIDEOS - Mode: {mode.upper()}")
-        print(f"{'=' * 50}")
-        print(f"Sheet ID: {config['google_sheet_id']}")
+    print(f"\nLibrary total: {len(library)} items")
+    write_library_json(library, dry_run=args.dry_run)
 
-        all_projects = []
+    totals = compute_youtube_totals(library)
+    print(f"YouTube totals: {totals['videos']} videos, {totals['views']:,} views")
 
-        # Build clients once so Instagram/TikTok fetch counts accumulate across worksheets
-        youtube_client = YouTubeClient(config["youtube_api_key"])
-        social_client = SocialMediaClient(config.get("cookies_file")) if HAS_YTDLP else None
-
-        for ws_name, ws_config in WORKSHEET_CONFIG.items():
-            projects = process_worksheet(
-                config, ws_name, ws_config, youtube_client, social_client,
-                mode, args.dry_run, args.fetch_thumbnails,
-            )
-            all_projects.extend(projects)
-
-        # Fetch total YouTube views and video count from external sheet
-        print("\nFetching total YouTube views from external spreadsheet...")
-        total_views, total_videos = fetch_total_youtube_views(
-            credentials_file=config["credentials_file"],
-            credentials_json=config.get("credentials_json"),
-        )
-        if total_views > 0:
-            print(f"  Total YouTube views: {format_count(total_views)}")
-            print(f"  Total YouTube videos: {total_videos}")
-
-        # Generate projects.js
-        if all_projects:
-            print(f"\nGenerating projects.js with {len(all_projects)} projects...")
-            content = generate_projects_js(all_projects, total_views, total_videos)
-
-            if args.dry_run:
-                print("\n[DRY RUN] Would write:")
-                print("-" * 40)
-                print(content[:800] + "..." if len(content) > 800 else content)
-            else:
-                PROJECTS_FILE.write_text(content, encoding="utf-8")
-                print(f"Written to: {PROJECTS_FILE}")
-
-            # Download videos if requested
-            if args.download and not args.dry_run:
-                print("\nDownloading preview videos...")
-                import subprocess
-                for project in all_projects:
-                    video_id = project["youtubeId"]
-                    platform = project.get("platform", "youtube")
-                    url = project.get("url", "")
-                    preview_path = ROOT_DIR / "videos" / "previews" / f"{video_id}.mp4"
-                    thumb_path = ROOT_DIR / "images" / "thumbnails" / f"{video_id}.jpg"
-
-                    # Check if we need to process this video
-                    needs_preview = not preview_path.exists()
-                    needs_thumb = platform in ("instagram", "tiktok") and not thumb_path.exists()
-
-                    if needs_preview or needs_thumb:
-                        print(f"  Processing: {video_id} ({platform})")
-                        if platform in ("instagram", "tiktok") and url:
-                            # Use -Url for Instagram/TikTok
-                            subprocess.run([
-                                "powershell", "-ExecutionPolicy", "Bypass",
-                                "-File", str(ROOT_DIR / "scripts" / "process-videos.ps1"),
-                                "-Url", url, "-NoPause"
-                            ], cwd=ROOT_DIR)
-                        else:
-                            # Use -All for YouTube
-                            subprocess.run([
-                                "powershell", "-ExecutionPolicy", "Bypass",
-                                "-File", str(ROOT_DIR / "scripts" / "process-videos.ps1"),
-                                "-All", video_id, "-NoPause"
-                            ], cwd=ROOT_DIR)
-        else:
-            print("\nNo projects found.")
-
-        print(f"\n{'=' * 50}")
-        print("SYNC COMPLETE")
-        print(f"{'=' * 50}\n")
-
-        # Surface silent Instagram failures as a non-zero exit so the workflow turns red.
-        # Without this, sessionid expiry leaves the workflow green but stops refreshing views.
-        if social_client:
-            ig = social_client.fetch_results["instagram"]
-            total = ig["success"] + ig["failure"]
-            if total > 0:
-                rate = ig["failure"] / total
-                print(f"Instagram: {ig['success']}/{total} succeeded ({rate * 100:.0f}% failure rate)")
-                if rate > INSTAGRAM_FAILURE_THRESHOLD:
-                    print(
-                        f"ERROR: Instagram failure rate {rate * 100:.0f}% exceeds threshold "
-                        f"{INSTAGRAM_FAILURE_THRESHOLD * 100:.0f}%. Cookies likely expired; "
-                        f"run scripts/refresh-cookies.bat."
-                    )
-                    sys.exit(1)
-
-    except Exception as e:
-        print(f"\nError: {e}")
-        raise
+    visible = load_visible_ids()
+    js_content = generate_projects_js(library, visible, totals)
+    visible_count = sum(len(v) for k, v in visible.items() if not k.startswith("_") and isinstance(v, list))
+    if args.dry_run:
+        print(f"[DRY RUN] Would write {visible_count} entries to {PROJECTS_FILE}")
+    else:
+        PROJECTS_FILE.write_text(js_content, encoding="utf-8")
+        print(f"Wrote {visible_count} entries to {PROJECTS_FILE}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,32 @@
+{
+  "_comment": "Temporary curation file driving the legacy js/projects.js generation. The IDs listed here are the videos shown on the current grid layout. After Task #6 lands, this file is superseded by data/site-config.json (which adds featured groupings and richer structure). Order within each category list is the display order on the live site.",
+  "long-form": [
+    "oWPH_tX1SVU",
+    "DW3F1OHfZeo",
+    "2aGmg_RHZFE",
+    "KZYFvgajyPE",
+    "WOGQI0PAjEU",
+    "gVQEYRTtm68",
+    "5iOsiDWWs04",
+    "mnO5bES3eQY",
+    "JgEullP4AVo",
+    "_lZYR2VkZTg",
+    "vP1rwg-rzcI",
+    "TZfM1yfkFn4"
+  ],
+  "short-form": [
+    "DIOkD4iMlUJ",
+    "7452871620013903150",
+    "DMqBVM4NTsc",
+    "DADw-ecNJwx",
+    "C-6GOVvv96_",
+    "DC9oYuWs0Xk",
+    "C1_1fTOOtRS",
+    "DD7aw3XtZSq",
+    "DEDPxYCNSdJ",
+    "DODyPfskkr6",
+    "C71usvjJhMM",
+    "gC4SC8j58pI"
+  ],
+  "motion-design": []
+}

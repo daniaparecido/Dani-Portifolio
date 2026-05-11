@@ -26,39 +26,24 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Write Instagram cookies
+      - name: Sync library + projects.js
         env:
-          INSTAGRAM_COOKIES: ${{ secrets.INSTAGRAM_COOKIES }}
-        run: |
-          if [ -n "$INSTAGRAM_COOKIES" ]; then
-            # Strip UTF-8 BOM if present. yt-dlp rejects Netscape cookie files starting with one;
-            # the BOM can sneak in when uploading the secret from PowerShell.
-            printf '%s' "$INSTAGRAM_COOKIES" | sed $'1s/^\xef\xbb\xbf//' > cookies.txt
-            echo "Wrote $(wc -c < cookies.txt) bytes to cookies.txt"
-          else
-            echo "INSTAGRAM_COOKIES secret is empty; Instagram refreshes will fail."
-          fi
-
-      - name: Refresh video stats
-        env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-          COOKIES_FILE: cookies.txt
         run: |
-          python scripts/sync_from_sheet.py --refresh
+          python scripts/sync_from_sheet.py
 
       - name: Check for changes
         id: git-check
         run: |
-          git diff --quiet js/projects.js || echo "changed=true" >> $GITHUB_OUTPUT
+          if ! git diff --quiet data/library.json js/projects.js; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit and push changes
         if: steps.git-check.outputs.changed == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add js/projects.js
+          git add data/library.json js/projects.js
           git commit -m "Update video stats [automated]"
           git push
-

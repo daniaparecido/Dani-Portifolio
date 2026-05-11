@@ -3,9 +3,9 @@
  * PROJECT DATA - AUTO-GENERATED FROM GOOGLE SHEETS
  * ============================================
  *
- * To update this file, run: python scripts/sync_from_sheet.py
- * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-05-11 15:17
+ * Source: data/library.json (full library) filtered by data/visible-ids.json.
+ * To regenerate, run: python scripts/sync_from_sheet.py
+ * Last updated: 2026-05-11 16:44
  */
 
 const totalYouTubeViews = 432566856;
@@ -24,7 +24,7 @@ const projects = [
         previewVideo: "videos/previews/oWPH_tX1SVU.mp4"
     },
     {
-        title: "Beat me in League, win $1000",
+        title: "Beat Me, Get $1000",
         category: "long-form",
         videoId: "DW3F1OHfZeo",
         platform: "youtube",
@@ -145,13 +145,13 @@ const projects = [
         previewVideo: "videos/previews/TZfM1yfkFn4.mp4"
     },
     {
-        title: "Impossível contar a história do Valorant sem contar a história da @bvstrdd! 😍 Obrigada @visa_br por ",
+        title: "Impossível contar a história do Valorant sem contar a história da @bvstrdd! 😍 Obrigada @visa_br por fazer parte dessa história 🥰",
         category: "short-form",
         videoId: "DIOkD4iMlUJ",
         platform: "instagram",
         channelName: "Team Liquid BR 🇧🇷",
         viewCount: "9K likes",
-        thumbnail: "",
+        thumbnail: "images/thumbnails/DIOkD4iMlUJ.jpg",
         url: "https://www.instagram.com/p/DIOkD4iMlUJ/",
         previewVideo: "videos/previews/DIOkD4iMlUJ.mp4"
     },
@@ -162,7 +162,7 @@ const projects = [
         platform: "tiktok",
         channelName: "liquid",
         viewCount: "10K views",
-        thumbnail: "",
+        thumbnail: "images/thumbnails/7452871620013903150.jpg",
         url: "https://www.tiktok.com/@liquid/video/7452871620013903150",
         previewVideo: "videos/previews/7452871620013903150.mp4"
     },
@@ -172,8 +172,8 @@ const projects = [
         videoId: "DMqBVM4NTsc",
         platform: "instagram",
         channelName: "Team Liquid",
-        viewCount: "87K likes",
-        thumbnail: "",
+        viewCount: "75K likes",
+        thumbnail: "images/thumbnails/DMqBVM4NTsc.jpg",
         url: "https://www.instagram.com/p/DMqBVM4NTsc/",
         previewVideo: "videos/previews/DMqBVM4NTsc.mp4"
     },
@@ -184,7 +184,7 @@ const projects = [
         platform: "instagram",
         channelName: "Team Liquid",
         viewCount: "622 likes",
-        thumbnail: "",
+        thumbnail: "images/thumbnails/DADw-ecNJwx.jpg",
         url: "https://www.instagram.com/p/DADw-ecNJwx/",
         previewVideo: "videos/previews/DADw-ecNJwx.mp4"
     },
@@ -195,7 +195,7 @@ const projects = [
         platform: "instagram",
         channelName: "Niki",
         viewCount: "130K likes",
-        thumbnail: "",
+        thumbnail: "images/thumbnails/C-6GOVvv96_.jpg",
         url: "https://www.instagram.com/p/C-6GOVvv96_/",
         previewVideo: "videos/previews/C-6GOVvv96_.mp4"
     },
@@ -206,18 +206,18 @@ const projects = [
         platform: "instagram",
         channelName: "Team Liquid BR 🇧🇷",
         viewCount: "1K likes",
-        thumbnail: "",
+        thumbnail: "images/thumbnails/DC9oYuWs0Xk.jpg",
         url: "https://www.instagram.com/p/DC9oYuWs0Xk/",
         previewVideo: "videos/previews/DC9oYuWs0Xk.mp4"
     },
     {
-        title: "Renderizar em segundos um projeto que levaria horas no seu PC? 👀 Vem pra Noar e dê um upgrade nos se",
+        title: "Renderizar em segundos um projeto que levaria horas no seu PC? 👀 Vem pra Noar e dê um upgrade nos seus projetos! 🤘🏻😎 #Noarcloud #Cloudpc #Render #Design #Photoshop #Premiere #Ilustrator",
         category: "short-form",
         videoId: "C1_1fTOOtRS",
         platform: "instagram",
         channelName: "Noar",
-        viewCount: "3 likes",
-        thumbnail: "",
+        viewCount: "",
+        thumbnail: "images/thumbnails/C1_1fTOOtRS.jpg",
         url: "https://www.instagram.com/p/C1_1fTOOtRS/",
         previewVideo: "videos/previews/C1_1fTOOtRS.mp4"
     },
@@ -228,8 +228,8 @@ const projects = [
         platform: "instagram",
         channelName: "Team Liquid BR 🇧🇷",
         viewCount: "169 likes",
-        thumbnail: "",
-        url: "https://www.instagram.com/reel/DD7aw3XtZSq/?igsh=emRuZWJnMzVhaHdh",
+        thumbnail: "images/thumbnails/DD7aw3XtZSq.jpg",
+        url: "https://www.instagram.com/p/DD7aw3XtZSq/",
         previewVideo: "videos/previews/DD7aw3XtZSq.mp4"
     },
     {
@@ -239,18 +239,18 @@ const projects = [
         platform: "instagram",
         channelName: "Team Liquid BR 🇧🇷",
         viewCount: "2K likes",
-        thumbnail: "",
-        url: "https://www.instagram.com/reel/DEDPxYCNSdJ/",
+        thumbnail: "images/thumbnails/DEDPxYCNSdJ.jpg",
+        url: "https://www.instagram.com/p/DEDPxYCNSdJ/",
         previewVideo: "videos/previews/DEDPxYCNSdJ.mp4"
     },
     {
-        title: "Huge thanks to our superfans for making #EsportsWorldCup Week 7 unforgettable. Exploring Riyadh was ",
+        title: "Huge thanks to our superfans for making #EsportsWorldCup Week 7 unforgettable. Exploring Riyadh was incredible, but what stood out even more was connecting with our fans on a deeper level, hearing the",
         category: "short-form",
         videoId: "DODyPfskkr6",
         platform: "instagram",
         channelName: "Team Liquid",
-        viewCount: "168 likes",
-        thumbnail: "",
+        viewCount: "155 likes",
+        thumbnail: "images/thumbnails/DODyPfskkr6.jpg",
         url: "https://www.instagram.com/p/DODyPfskkr6/",
         previewVideo: "videos/previews/DODyPfskkr6.mp4"
     },
@@ -260,8 +260,8 @@ const projects = [
         videoId: "C71usvjJhMM",
         platform: "instagram",
         channelName: "Team Liquid BR 🇧🇷",
-        viewCount: "838 likes",
-        thumbnail: "",
+        viewCount: "839 likes",
+        thumbnail: "images/thumbnails/C71usvjJhMM.jpg",
         url: "https://www.instagram.com/p/C71usvjJhMM/",
         previewVideo: "videos/previews/C71usvjJhMM.mp4"
     },
@@ -273,7 +273,7 @@ const projects = [
         channelName: "República Coisa de Nerd",
         viewCount: "5.1M views",
         thumbnail: "",
-        url: "https://www.youtube.com/shorts/gC4SC8j58pI",
+        url: "https://www.youtube.com/watch?v=gC4SC8j58pI",
         previewVideo: "videos/previews/gC4SC8j58pI.mp4"
     },
 ];
