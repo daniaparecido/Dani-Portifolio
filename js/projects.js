@@ -5,11 +5,11 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-05-11 09:02
+ * Last updated: 2026-05-11 15:10
  */
 
-const totalYouTubeViews = 432564862;
-const totalYouTubeVideos = 569;
+const totalYouTubeViews = 432566856;
+const totalYouTubeVideos = 571;
 
 const projects = [
     {
