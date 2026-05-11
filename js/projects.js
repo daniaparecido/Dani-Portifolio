@@ -5,7 +5,7 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-05-11 15:10
+ * Last updated: 2026-05-11 15:17
  */
 
 const totalYouTubeViews = 432566856;
@@ -172,7 +172,7 @@ const projects = [
         videoId: "DMqBVM4NTsc",
         platform: "instagram",
         channelName: "Team Liquid",
-        viewCount: "75K likes",
+        viewCount: "87K likes",
         thumbnail: "",
         url: "https://www.instagram.com/p/DMqBVM4NTsc/",
         previewVideo: "videos/previews/DMqBVM4NTsc.mp4"
@@ -216,7 +216,7 @@ const projects = [
         videoId: "C1_1fTOOtRS",
         platform: "instagram",
         channelName: "Noar",
-        viewCount: "0 likes",
+        viewCount: "3 likes",
         thumbnail: "",
         url: "https://www.instagram.com/p/C1_1fTOOtRS/",
         previewVideo: "videos/previews/C1_1fTOOtRS.mp4"
@@ -249,7 +249,7 @@ const projects = [
         videoId: "DODyPfskkr6",
         platform: "instagram",
         channelName: "Team Liquid",
-        viewCount: "155 likes",
+        viewCount: "168 likes",
         thumbnail: "",
         url: "https://www.instagram.com/p/DODyPfskkr6/",
         previewVideo: "videos/previews/DODyPfskkr6.mp4"
