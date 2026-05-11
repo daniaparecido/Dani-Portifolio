@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://daniaparecido.github.io/Dani-Portifolio/data/site-config.schema.json",
+  "title": "Dani Portfolio site config",
+  "description": "Curation layer driving the live portfolio. Every videoId here must exist in data/library.json. Edited via the visual editor (editor.html), consumed by the front-end and by scripts/sync_from_sheet.py.",
+  "type": "object",
+  "required": ["version", "featured", "sections"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version. Bump when introducing breaking changes."
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO timestamp of the last edit. Set by the editor; cosmetic."
+    },
+    "featured": {
+      "type": "array",
+      "description": "Hero carousel groups, in display order. Each group is one long-form video paired with the short-form videos derived from it. Recommended length 2-3 to avoid overwhelming the viewer.",
+      "items": {
+        "type": "object",
+        "required": ["long_form_id", "short_form_ids"],
+        "additionalProperties": false,
+        "properties": {
+          "long_form_id": {
+            "type": "string",
+            "description": "videoId of the long-form anchor for this featured group."
+          },
+          "short_form_ids": {
+            "type": "array",
+            "description": "videoIds of the short-form pieces derived from the long-form, in display order.",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "description": "Ordered list of category sections rendered below the featured carousel. Each section gets an anchor in the top nav for smooth-scroll.",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "video_ids"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Slug used for the URL anchor (e.g. #long-form) and CSS hooks.",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "title": {
+            "type": "string",
+            "description": "Display name shown in the nav and the section header."
+          },
+          "video_ids": {
+            "type": "array",
+            "description": "videoIds in display order. Must exist in library.json.",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    }
+  }
+}

@@ -5,12 +5,13 @@ Sync video library from the two source Google Sheets to local JSON.
 Mirror mode (the only mode after the 2026-05-11 redesign): the script reads the
 IG/TikTok library sheet and the YouTube library sheet, builds the full library
 of edited videos as data/library.json, and regenerates the legacy js/projects.js
-filtered down to whichever video IDs are listed in data/visible-ids.json.
+filtered down to whichever video IDs are listed in data/site-config.json
+(sections + their ordered video_ids).
 
 The two source sheets are populated and refreshed by other tooling (the daily
-GitHub Actions runner is purely a mirror here, no API calls, no yt-dlp). When
-Task #6 of the redesign lands, data/visible-ids.json is replaced by a richer
-data/site-config.json that adds featured groupings and section ordering.
+GitHub Actions runner is purely a mirror here, no API calls, no yt-dlp). The
+data/site-config.json file is the canonical curation layer, edited via the
+visual editor (editor.html) and read by both this script and the front-end.
 
 Usage:
     python scripts/sync_from_sheet.py           # default: regenerate JSON + projects.js
@@ -46,7 +47,7 @@ SCOPES = [
 ROOT_DIR = Path(__file__).parent.parent
 DATA_DIR = ROOT_DIR / "data"
 LIBRARY_FILE = DATA_DIR / "library.json"
-VISIBLE_IDS_FILE = DATA_DIR / "visible-ids.json"
+SITE_CONFIG_FILE = DATA_DIR / "site-config.json"
 PROJECTS_FILE = ROOT_DIR / "js" / "projects.js"
 THUMBS_DIR = ROOT_DIR / "images" / "thumbnails"
 
@@ -285,16 +286,21 @@ def escape_js(s):
     return (s or "").replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
 
-def generate_projects_js(library, visible, totals):
+def generate_projects_js(library, site_config, totals):
     """Build js/projects.js from the legacy-shaped projects array,
-    filtered to whatever data/visible-ids.json marks as visible."""
+    filtered to whatever data/site-config.json marks as visible.
+
+    Iterates sections in order; within each section, iterates video_ids in
+    order. The legacy front-end does not understand the featured carousel,
+    so featured groups don't materialize here, they're picked up by the
+    redesigned front-end directly from site-config.json.
+    """
     by_id = {item["id"]: item for item in library}
     ordered = []
     missing = []
-    for category, ids in visible.items():
-        if category.startswith("_") or not isinstance(ids, list):
-            continue
-        for vid in ids:
+    for section in site_config.get("sections", []):
+        category = section["id"]
+        for vid in section.get("video_ids", []):
             item = by_id.get(vid)
             if item is None:
                 missing.append((category, vid))
@@ -302,7 +308,7 @@ def generate_projects_js(library, visible, totals):
             ordered.append((category, item))
     if missing:
         for category, vid in missing:
-            print(f"  WARNING: visible id {vid} ({category}) not found in library")
+            print(f"  WARNING: site-config id {vid} ({category}) not found in library")
 
     lines = [
         "/**",
@@ -352,11 +358,11 @@ def compute_youtube_totals(library):
     return {"views": total_views, "videos": len(yt)}
 
 
-def load_visible_ids():
-    if not VISIBLE_IDS_FILE.exists():
-        print(f"  visible-ids.json not found at {VISIBLE_IDS_FILE}; projects.js will be empty")
-        return {}
-    return json.loads(VISIBLE_IDS_FILE.read_text(encoding="utf-8"))
+def load_site_config():
+    if not SITE_CONFIG_FILE.exists():
+        print(f"  site-config.json not found at {SITE_CONFIG_FILE}; projects.js will be empty")
+        return {"version": 1, "featured": [], "sections": []}
+    return json.loads(SITE_CONFIG_FILE.read_text(encoding="utf-8"))
 
 
 # ============================================
@@ -390,9 +396,9 @@ def main():
     totals = compute_youtube_totals(library)
     print(f"YouTube totals: {totals['videos']} videos, {totals['views']:,} views")
 
-    visible = load_visible_ids()
-    js_content = generate_projects_js(library, visible, totals)
-    visible_count = sum(len(v) for k, v in visible.items() if not k.startswith("_") and isinstance(v, list))
+    site_config = load_site_config()
+    js_content = generate_projects_js(library, site_config, totals)
+    visible_count = sum(len(s.get("video_ids", [])) for s in site_config.get("sections", []))
     if args.dry_run:
         print(f"[DRY RUN] Would write {visible_count} entries to {PROJECTS_FILE}")
     else:

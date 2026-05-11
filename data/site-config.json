@@ -1,0 +1,49 @@
+{
+  "$schema": "./site-config.schema.json",
+  "version": 1,
+  "generated_at": "2026-05-11T16:55:00-03:00",
+  "featured": [],
+  "sections": [
+    {
+      "id": "long-form",
+      "title": "Long-form",
+      "video_ids": [
+        "oWPH_tX1SVU",
+        "DW3F1OHfZeo",
+        "2aGmg_RHZFE",
+        "KZYFvgajyPE",
+        "WOGQI0PAjEU",
+        "gVQEYRTtm68",
+        "5iOsiDWWs04",
+        "mnO5bES3eQY",
+        "JgEullP4AVo",
+        "_lZYR2VkZTg",
+        "vP1rwg-rzcI",
+        "TZfM1yfkFn4"
+      ]
+    },
+    {
+      "id": "short-form",
+      "title": "Short-form",
+      "video_ids": [
+        "DIOkD4iMlUJ",
+        "7452871620013903150",
+        "DMqBVM4NTsc",
+        "DADw-ecNJwx",
+        "C-6GOVvv96_",
+        "DC9oYuWs0Xk",
+        "C1_1fTOOtRS",
+        "DD7aw3XtZSq",
+        "DEDPxYCNSdJ",
+        "DODyPfskkr6",
+        "C71usvjJhMM",
+        "gC4SC8j58pI"
+      ]
+    },
+    {
+      "id": "motion-design",
+      "title": "Motion Design",
+      "video_ids": []
+    }
+  ]
+}
