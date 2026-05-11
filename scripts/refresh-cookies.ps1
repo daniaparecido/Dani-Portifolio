@@ -32,27 +32,39 @@ param(
     [switch]$NoUpload
 )
 
-$ErrorActionPreference = "Stop"
+# NOTE: Do NOT use $ErrorActionPreference = "Stop" globally. In PS 5.1, native commands
+# that write to stderr (yt-dlp always does on a failed extraction) get wrapped as
+# NativeCommandError under Stop mode, even when they exit cleanly. We check $LASTEXITCODE
+# and Test-Path manually instead.
+$ErrorActionPreference = "Continue"
+
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $CookiesPath = Join-Path $RepoRoot "cookies.txt"
 $TempPath = Join-Path $env:TEMP "cookies-raw.txt"
 $RepoSlug = "daniaparecido/Dani-Portifolio"
 $SecretName = "INSTAGRAM_COOKIES"
 
+if (Test-Path $TempPath) { Remove-Item $TempPath -Force }
+
 Write-Host "Extracting cookies from $Browser..." -ForegroundColor Cyan
 
-# yt-dlp loads cookies from the browser, then writes them to --cookies after the run.
-# We point it at instagram.com so the relevant cookies are touched and saved.
+# yt-dlp writes the --cookies file regardless of whether the URL extracts successfully.
+# We don't care about extraction; we just want the cookie jar dumped to Netscape format.
+# --ignore-errors lets it continue past extraction failures; 2>$null silences stderr without
+# triggering the PS 5.1 native-stderr-wrap behavior (no 2>&1).
 & python -m yt_dlp `
     --cookies-from-browser $Browser `
     --cookies $TempPath `
     --skip-download `
+    --ignore-errors `
     --no-warnings `
-    --quiet `
-    "https://www.instagram.com/instagram/" 2>&1 | Out-Null
+    "https://www.instagram.com/instagram/" 2>$null | Out-Null
 
 if (-not (Test-Path $TempPath)) {
-    throw "yt-dlp did not produce $TempPath. Make sure $Browser is closed and you're logged into Instagram."
+    Write-Host "ERROR: yt-dlp did not produce $TempPath." -ForegroundColor Red
+    Write-Host "  - Is $Browser closed? (Chrome/Edge lock their cookie DB while running.)" -ForegroundColor Yellow
+    Write-Host "  - Is yt-dlp installed? Run: pip install -r requirements.txt" -ForegroundColor Yellow
+    exit 1
 }
 
 # Filter to instagram.com cookies only (don't ship your whole browser cookie jar to GitHub)
@@ -61,7 +73,19 @@ $header = $lines | Where-Object { $_.StartsWith("#") -or $_.Trim() -eq "" }
 $instagramOnly = $lines | Where-Object { $_ -match "^\.?instagram\.com\t" }
 
 if (-not $instagramOnly) {
-    throw "No instagram.com cookies found. Open $Browser, log into https://www.instagram.com, close the browser, then retry."
+    Write-Host "ERROR: No instagram.com cookies found in the export." -ForegroundColor Red
+    Write-Host "  Open $Browser, log into https://www.instagram.com, close the browser, then retry." -ForegroundColor Yellow
+    exit 1
+}
+
+# Critical: a logged-OUT browser produces cookies WITHOUT sessionid. Without sessionid,
+# Instagram rejects all requests. Catch this before pushing a useless secret.
+$hasSessionid = $instagramOnly | Where-Object { $_ -match "^\.?instagram\.com\t[^\t]+\t[^\t]+\t[^\t]+\t[^\t]+\tsessionid\t" }
+if (-not $hasSessionid) {
+    Write-Host "ERROR: Instagram cookies are missing sessionid (you weren't logged in)." -ForegroundColor Red
+    Write-Host "  Open $Browser, go to https://www.instagram.com, log in, confirm you see your feed," -ForegroundColor Yellow
+    Write-Host "  close $Browser fully, then retry." -ForegroundColor Yellow
+    exit 1
 }
 
 # Set-Content + array writes one line per element with native newlines; that's correct for Netscape format
