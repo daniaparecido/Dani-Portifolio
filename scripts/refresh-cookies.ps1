@@ -103,8 +103,18 @@ if ($NoUpload) {
 }
 
 Write-Host "Uploading to GitHub secret $SecretName ($RepoSlug)..." -ForegroundColor Cyan
-Get-Content $CookiesPath -Raw | & gh secret set $SecretName --repo $RepoSlug
-if ($LASTEXITCODE -ne 0) {
-    throw "gh secret set failed with exit code $LASTEXITCODE"
+# PS 5.1's default $OutputEncoding (UTF-8 with BOM) prepends a BOM when piping strings to native
+# commands. yt-dlp rejects a BOM in Netscape cookie files ("does not look like a Netscape format
+# cookies file"). Force UTF-8 without BOM for this pipe; ASCII content is safe under UTF-8.
+$prevOutputEncoding = $OutputEncoding
+$OutputEncoding = New-Object System.Text.UTF8Encoding $false
+try {
+    Get-Content $CookiesPath -Raw | & gh secret set $SecretName --repo $RepoSlug
+    if ($LASTEXITCODE -ne 0) {
+        throw "gh secret set failed with exit code $LASTEXITCODE"
+    }
+}
+finally {
+    $OutputEncoding = $prevOutputEncoding
 }
 Write-Host "Done. Next scheduled run of update-videos.yml will use the fresh cookies." -ForegroundColor Green

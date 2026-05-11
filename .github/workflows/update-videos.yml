@@ -31,7 +31,9 @@ jobs:
           INSTAGRAM_COOKIES: ${{ secrets.INSTAGRAM_COOKIES }}
         run: |
           if [ -n "$INSTAGRAM_COOKIES" ]; then
-            printf '%s' "$INSTAGRAM_COOKIES" > cookies.txt
+            # Strip UTF-8 BOM if present. yt-dlp rejects Netscape cookie files starting with one;
+            # the BOM can sneak in when uploading the secret from PowerShell.
+            printf '%s' "$INSTAGRAM_COOKIES" | sed $'1s/^\xef\xbb\xbf//' > cookies.txt
             echo "Wrote $(wc -c < cookies.txt) bytes to cookies.txt"
           else
             echo "INSTAGRAM_COOKIES secret is empty; Instagram refreshes will fail."
