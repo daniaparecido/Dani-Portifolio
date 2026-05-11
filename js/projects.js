@@ -5,7 +5,7 @@
  *
  * To update this file, run: python scripts/sync_from_sheet.py
  * Or use the /sync-videos skill in Claude Code
- * Last updated: 2026-05-11 15:17
+ * Last updated: 2026-05-11 15:42
  */
 
 const totalYouTubeViews = 432566856;
