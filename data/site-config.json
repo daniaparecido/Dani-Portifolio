@@ -2,42 +2,53 @@
   "$schema": "./site-config.schema.json",
   "version": 1,
   "generated_at": "2026-05-11T16:55:00-03:00",
-  "featured": [],
-  "sections": [
+  "featured": [
     {
-      "id": "long-form",
-      "title": "Long-form",
-      "video_ids": [
-        "oWPH_tX1SVU",
-        "DW3F1OHfZeo",
-        "2aGmg_RHZFE",
-        "KZYFvgajyPE",
-        "WOGQI0PAjEU",
-        "gVQEYRTtm68",
-        "5iOsiDWWs04",
-        "mnO5bES3eQY",
-        "JgEullP4AVo",
-        "_lZYR2VkZTg",
-        "vP1rwg-rzcI",
-        "TZfM1yfkFn4"
+      "long_form_id": "DW3F1OHfZeo",
+      "short_form_ids": [
+        "1m9rl_lxits",
+        "scK-D1Eg7PY"
       ]
     },
+    {
+      "long_form_id": "DaEP-ij-1KA",
+      "short_form_ids": [
+        "AT9g-2yrS5s",
+        "UkEXXO-o8b8"
+      ]
+    }
+  ],
+  "sections": [
     {
       "id": "short-form",
       "title": "Short-form",
       "video_ids": [
-        "DIOkD4iMlUJ",
         "7452871620013903150",
-        "DMqBVM4NTsc",
-        "DADw-ecNJwx",
-        "C-6GOVvv96_",
-        "DC9oYuWs0Xk",
-        "C1_1fTOOtRS",
-        "DD7aw3XtZSq",
-        "DEDPxYCNSdJ",
+        "DIOkD4iMlUJ",
         "DODyPfskkr6",
+        "DMqBVM4NTsc",
         "C71usvjJhMM",
-        "gC4SC8j58pI"
+        "DNdanV2MM2i",
+        "gC4SC8j58pI",
+        "C1_1fTOOtRS",
+        "C-6GOVvv96_",
+        "DADw-ecNJwx"
+      ]
+    },
+    {
+      "id": "long-form",
+      "title": "Long-form",
+      "video_ids": [
+        "KZYFvgajyPE",
+        "2aGmg_RHZFE",
+        "gVQEYRTtm68",
+        "5iOsiDWWs04",
+        "mnO5bES3eQY",
+        "WOGQI0PAjEU",
+        "JgEullP4AVo",
+        "vP1rwg-rzcI",
+        "_lZYR2VkZTg",
+        "TZfM1yfkFn4"
       ]
     },
     {
