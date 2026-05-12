@@ -5,7 +5,7 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-05-12 11:58
+ * Last updated: 2026-05-12 12:30
  */
 
 const totalYouTubeViews = 432599862;
@@ -76,7 +76,7 @@ const projects = [
         viewCount: "172 likes",
         thumbnail: "images/thumbnails/DNdanV2MM2i.jpg",
         url: "https://www.instagram.com/reel/DNdanV2MM2i/",
-        previewVideo: ""
+        previewVideo: "videos/previews/DNdanV2MM2i.mp4"
     },
     {
         title: "LEON REAGE AO SEU MEME MAIS PESADO",

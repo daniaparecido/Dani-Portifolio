@@ -674,17 +674,17 @@ button {
     aspect-ratio: 16 / 9;
 }
 
-/* Title/meta sit below the thumbnail like a normal card; just a touch more
+/* Title/meta sit below the thumbnail like a normal card; give them generous
    breathing room and a larger title to match the tile's scale. */
 .featured-main .grid-item-overlay {
-    padding: 12px 4px 0;
+    padding: 18px 12px 6px;
 }
 
 .featured-main .grid-item-title {
     font-size: 16px;
     font-weight: 500;
     white-space: normal;
-    margin-bottom: 3px;
+    margin-bottom: 5px;
 }
 
 .featured-main .grid-item-meta {
@@ -1241,7 +1241,7 @@ button {
     }
 
     .featured-main .grid-item-overlay {
-        padding: 8px 2px 0;
+        padding: 12px 6px 4px;
     }
 
     .featured-main .grid-item-title {
