@@ -30,6 +30,24 @@ def get_timestamp() -> str:
     return datetime.now(GMT_MINUS_3).strftime("%Y-%m-%d %H:%M")
 
 
+def is_stale(last_updated: str, max_age_days: int) -> bool:
+    """True if a row's "Last Updated" stamp is older than max_age_days, or absent/unparseable.
+
+    max_age_days <= 0 disables the filter (every row counts as stale, i.e. refresh all).
+    Blank or malformed timestamps are treated as stale so they always get refreshed.
+    """
+    if max_age_days <= 0:
+        return True
+    last_updated = (last_updated or "").strip()
+    if not last_updated:
+        return True
+    try:
+        ts = datetime.strptime(last_updated, "%Y-%m-%d %H:%M").replace(tzinfo=GMT_MINUS_3)
+    except ValueError:
+        return True
+    return datetime.now(GMT_MINUS_3) - ts > timedelta(days=max_age_days)
+
+
 def _text(value) -> str:
     """Prefix with apostrophe to force Google Sheets to treat as text, not number/date/time."""
     return f"'{value}" if value else ""
@@ -78,17 +96,20 @@ class SheetsClient:
             logger.info("Updated headers")
 
     def get_all_rows(self) -> list[dict]:
-        """Get all rows with their URLs and row numbers."""
+        """Get all rows with their URLs, row numbers, and "Last Updated" stamps."""
         all_values = self.worksheet.get_all_values()
+        last_col_idx = len(self.headers) - 1  # "Last Updated" is always the final column
 
         rows = []
         for idx, row in enumerate(all_values[1:], start=2):  # Skip header, rows start at 2
             url = row[0] if row else ""
             if url.strip():
+                last_updated = row[last_col_idx].strip() if len(row) > last_col_idx else ""
                 rows.append({
                     "row_num": idx,
                     "url": url.strip(),
-                    "has_data": len(row) > 1 and row[1].strip() != ""  # Check if Video ID exists
+                    "has_data": len(row) > 1 and row[1].strip() != "",  # Check if Video ID exists
+                    "last_updated": last_updated,
                 })
 
         return rows

@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dotenv import load_dotenv
 from tiktok_client import TikTokClient
-from sheets_client import SheetsClient
+from sheets_client import SheetsClient, is_stale
 
 logging.basicConfig(
     level=logging.INFO,
@@ -93,8 +93,12 @@ def populate_new_videos(client: TikTokClient, sheets: SheetsClient):
     logger.info(f"Populated {len(updates)} new videos")
 
 
-def refresh_stats(client: TikTokClient, sheets: SheetsClient):
-    """Refresh only Views, Likes, Comments for existing videos."""
+def refresh_stats(client: TikTokClient, sheets: SheetsClient, max_age_days: int = 0):
+    """Refresh only Views, Likes, Comments for existing videos.
+
+    max_age_days > 0 skips rows whose "Last Updated" stamp is newer than N days,
+    so a refresh doesn't have to hit every row at once (anti rate-limiting).
+    """
     logger.info("Mode: REFRESH STATS")
     logger.info("-" * 50)
 
@@ -103,7 +107,13 @@ def refresh_stats(client: TikTokClient, sheets: SheetsClient):
 
     # Filter to only existing rows (have Video ID)
     existing_rows = [r for r in rows if r["has_data"]]
-    logger.info(f"Found {len(existing_rows)} existing videos to refresh")
+    logger.info(f"Found {len(existing_rows)} existing videos")
+
+    if max_age_days > 0:
+        before = len(existing_rows)
+        existing_rows = [r for r in existing_rows if is_stale(r.get("last_updated", ""), max_age_days)]
+        logger.info(f"Staleness filter (>{max_age_days}d): refreshing {len(existing_rows)}, "
+                    f"skipping {before - len(existing_rows)} recently updated")
 
     if not existing_rows:
         logger.info("No existing videos to refresh.")
@@ -141,6 +151,8 @@ def main():
     parser = argparse.ArgumentParser(description="TikTok Video Tracker")
     parser.add_argument("--refresh-stats", action="store_true",
                         help="Only refresh Views, Likes, Comments for existing videos")
+    parser.add_argument("--max-age-days", type=int, default=0,
+                        help="With --refresh-stats: only refresh rows older than N days (0 = refresh all)")
     parser.add_argument("--browser", type=str, default=None,
                         help="Browser to get cookies from (firefox recommended)")
     parser.add_argument("--cookies", type=str, default=None,
@@ -165,7 +177,7 @@ def main():
     sheets.ensure_headers()
 
     if args.refresh_stats:
-        refresh_stats(client, sheets)
+        refresh_stats(client, sheets, max_age_days=args.max_age_days)
     else:
         populate_new_videos(client, sheets)
 

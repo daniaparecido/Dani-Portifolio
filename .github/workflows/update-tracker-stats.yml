@@ -2,10 +2,24 @@ name: Update Tracker Stats
 
 on:
   schedule:
-    # Run daily at 9:00 AM UTC
+    # Run daily at 9:00 AM UTC. A scheduled run does both passes:
+    # populate brand-new rows, then refresh stats older than 7 days.
     - cron: '0 9 * * *'
   workflow_dispatch:
-    # Allow manual trigger from GitHub Actions UI
+    inputs:
+      mode:
+        description: 'Which pass to run (manual trigger only; a scheduled run does both)'
+        type: choice
+        required: false
+        default: refresh
+        options:
+          - refresh
+          - populate
+
+env:
+  # On a scheduled run inputs are empty -> treat as "both passes".
+  RUN_POPULATE: ${{ github.event_name == 'schedule' || github.event.inputs.mode == 'populate' }}
+  RUN_REFRESH: ${{ github.event_name == 'schedule' || github.event.inputs.mode != 'populate' }}
 
 jobs:
   update-youtube:
@@ -24,6 +38,7 @@ jobs:
         run: pip install -r tracker/requirements.txt
 
       - name: Populate new YouTube videos
+        if: ${{ env.RUN_POPULATE == 'true' }}
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           GOOGLE_SHEET_ID: ${{ secrets.TRACKER_YOUTUBE_SHEET_ID }}
@@ -31,6 +46,7 @@ jobs:
         run: python tracker/youtube/main.py
 
       - name: Refresh YouTube stats
+        if: ${{ env.RUN_REFRESH == 'true' }}
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           GOOGLE_SHEET_ID: ${{ secrets.TRACKER_YOUTUBE_SHEET_ID }}
@@ -63,16 +79,18 @@ jobs:
             echo "::error::TIKTOK_COOKIES secret is not a Netscape-format cookies file (missing magic header line)."; exit 1; }
 
       - name: Populate new TikTok videos
+        if: ${{ env.RUN_POPULATE == 'true' }}
         env:
           SOCIAL_SHEET_ID: ${{ secrets.TRACKER_SOCIAL_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: python tracker/tiktok/main.py --cookies tracker/tiktok/cookies.txt
 
       - name: Refresh TikTok stats
+        if: ${{ env.RUN_REFRESH == 'true' }}
         env:
           SOCIAL_SHEET_ID: ${{ secrets.TRACKER_SOCIAL_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        run: python tracker/tiktok/main.py --refresh-stats --cookies tracker/tiktok/cookies.txt
+        run: python tracker/tiktok/main.py --refresh-stats --max-age-days 7 --cookies tracker/tiktok/cookies.txt
 
   update-instagram:
     runs-on: ubuntu-latest
@@ -100,13 +118,15 @@ jobs:
             echo "::error::INSTAGRAM_COOKIES secret is not a Netscape-format cookies file (missing magic header line)."; exit 1; }
 
       - name: Populate new Instagram videos
+        if: ${{ env.RUN_POPULATE == 'true' }}
         env:
           SOCIAL_SHEET_ID: ${{ secrets.TRACKER_SOCIAL_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: python tracker/instagram/main.py --cookies tracker/instagram/cookies.txt
 
       - name: Refresh Instagram stats
+        if: ${{ env.RUN_REFRESH == 'true' }}
         env:
           SOCIAL_SHEET_ID: ${{ secrets.TRACKER_SOCIAL_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        run: python tracker/instagram/main.py --refresh-stats --cookies tracker/instagram/cookies.txt
+        run: python tracker/instagram/main.py --refresh-stats --max-age-days 7 --cookies tracker/instagram/cookies.txt

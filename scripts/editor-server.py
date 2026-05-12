@@ -16,10 +16,13 @@ Usage:
 """
 
 import argparse
+import datetime as _dt
 import json
 import mimetypes
 import os
+import subprocess
 import sys
+import urllib.parse
 import webbrowser
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -29,6 +32,9 @@ ROOT_DIR = Path(__file__).parent.parent
 DATA_DIR = ROOT_DIR / "data"
 LIBRARY_FILE = DATA_DIR / "library.json"
 SITE_CONFIG_FILE = DATA_DIR / "site-config.json"
+SYNC_SCRIPT = ROOT_DIR / "scripts" / "sync_from_sheet.py"
+FETCH_THUMBS_SCRIPT = ROOT_DIR / "scripts" / "fetch_thumbnails.py"
+TRACKER_WORKFLOW = "update-tracker-stats.yml"
 
 # Explicit allowlist of paths we will serve. Keeps the surface tiny.
 SAFE_GET_PATHS = {
@@ -75,11 +81,14 @@ class EditorHandler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_GET(self):
-        if self.path in SAFE_GET_PATHS:
-            return self._send_file(SAFE_GET_PATHS[self.path])
+        parsed = urllib.parse.urlsplit(self.path)
+        if parsed.path == "/api/update-stats/status":
+            return self._handle_stats_status()
+        if parsed.path in SAFE_GET_PATHS:
+            return self._send_file(SAFE_GET_PATHS[parsed.path])
         for prefix, base in SAFE_GET_PREFIXES:
-            if self.path.startswith(prefix):
-                relative = self.path[len(prefix):]
+            if parsed.path.startswith(prefix):
+                relative = parsed.path[len(prefix):]
                 candidate = (base / relative).resolve()
                 # Refuse path traversal that escapes the base.
                 try:
@@ -91,9 +100,17 @@ class EditorHandler(BaseHTTPRequestHandler):
         self.send_error(HTTPStatus.NOT_FOUND)
 
     def do_POST(self):
-        if self.path != "/api/save":
-            self.send_error(HTTPStatus.NOT_FOUND)
-            return
+        if self.path == "/api/save":
+            return self._handle_save()
+        if self.path == "/api/update-stats":
+            return self._handle_update_stats()
+        if self.path == "/api/sync-local":
+            return self._handle_sync_local()
+        if self.path == "/api/fetch-thumbnails":
+            return self._handle_fetch_thumbnails()
+        self.send_error(HTTPStatus.NOT_FOUND)
+
+    def _handle_save(self):
         length = int(self.headers.get("Content-Length", "0") or 0)
         if length <= 0 or length > 1_000_000:
             return self._send_json(HTTPStatus.BAD_REQUEST, {"error": "missing or oversized body"})
@@ -118,6 +135,155 @@ class EditorHandler(BaseHTTPRequestHandler):
             "sections": len(config.get("sections", [])),
             "total_video_ids": sum(len(s.get("video_ids", [])) for s in config.get("sections", [])),
         })
+
+    def _handle_update_stats(self):
+        """Trigger the upstream update-tracker-stats.yml workflow via gh CLI.
+
+        Optional JSON body {"mode": "populate"|"refresh"} (default "refresh"):
+        - populate: fill in brand-new rows that have only a URL.
+        - refresh:  update view/like/comment counts on rows older than the
+          workflow's staleness window (so it touches ~a handful of rows, not all).
+        """
+        mode = "refresh"
+        length = int(self.headers.get("Content-Length", "0") or 0)
+        if length > 0:
+            if length > 10_000:
+                return self._send_json(HTTPStatus.BAD_REQUEST, {"error": "oversized body"})
+            try:
+                body = json.loads(self.rfile.read(length).decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as e:
+                return self._send_json(HTTPStatus.BAD_REQUEST, {"error": f"invalid JSON: {e}"})
+            if isinstance(body, dict) and body.get("mode"):
+                mode = str(body["mode"])
+        if mode not in ("populate", "refresh"):
+            return self._send_json(HTTPStatus.BAD_REQUEST, {
+                "error": f"mode must be 'populate' or 'refresh', got {mode!r}",
+            })
+
+        triggered_at = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        proc = _run_gh(["workflow", "run", TRACKER_WORKFLOW, "-f", f"mode={mode}"], timeout=30)
+        if proc.returncode != 0:
+            return self._send_json(HTTPStatus.BAD_GATEWAY, {
+                "error": "gh workflow run failed",
+                "stderr": proc.stderr.strip(),
+            })
+        return self._send_json(HTTPStatus.OK, {
+            "triggered": True,
+            "triggered_at": triggered_at,
+            "workflow": TRACKER_WORKFLOW,
+            "mode": mode,
+        })
+
+    def _handle_stats_status(self):
+        """Return the most recent run for the tracker workflow."""
+        proc = _run_gh([
+            "run", "list",
+            "--workflow", TRACKER_WORKFLOW,
+            "--limit", "1",
+            "--json", "databaseId,status,conclusion,createdAt,url,event",
+        ], timeout=20)
+        if proc.returncode != 0:
+            return self._send_json(HTTPStatus.BAD_GATEWAY, {
+                "error": "gh run list failed",
+                "stderr": proc.stderr.strip(),
+            })
+        try:
+            runs = json.loads(proc.stdout or "[]")
+        except json.JSONDecodeError:
+            runs = []
+        return self._send_json(HTTPStatus.OK, {"runs": runs})
+
+    def _handle_sync_local(self):
+        """Run sync_from_sheet.py to mirror latest sheet state into library.json."""
+        proc = subprocess.run(
+            [sys.executable, str(SYNC_SCRIPT)],
+            cwd=str(ROOT_DIR),
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        if proc.returncode != 0:
+            return self._send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {
+                "error": "sync_from_sheet.py failed",
+                "stderr": proc.stderr.strip()[-2000:],
+                "stdout": proc.stdout.strip()[-2000:],
+            })
+        # Count items so the client can confirm freshness without re-fetching the file.
+        item_count = 0
+        try:
+            payload = json.loads(LIBRARY_FILE.read_text(encoding="utf-8"))
+            item_count = len(payload.get("items", []))
+        except Exception:
+            pass
+        return self._send_json(HTTPStatus.OK, {
+            "synced": True,
+            "items": item_count,
+            "stdout": proc.stdout.strip()[-2000:],
+        })
+
+    def _handle_fetch_thumbnails(self):
+        """Re-download fresh Instagram/TikTok thumbnails, then re-mirror library.json.
+
+        IG/TikTok CDN thumbnail URLs in the source sheets are signed and expire after
+        a few weeks (oe= / x-expires=), so the cards go black. fetch_thumbnails.py uses
+        yt-dlp (with the local cookies jars when present) to re-resolve each post and
+        write images/thumbnails/{id}.jpg; then sync_from_sheet.py re-mirrors so
+        library.json points at the now-local files. Instagram in particular needs a
+        logged-in cookies file; missing/expired cookies surface in the stderr below.
+        """
+        fetch = subprocess.run(
+            [sys.executable, str(FETCH_THUMBS_SCRIPT), "--delay", "1.2"],
+            cwd=str(ROOT_DIR),
+            capture_output=True,
+            text=True,
+            timeout=1800,
+        )
+        if fetch.returncode != 0:
+            return self._send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {
+                "error": "fetch_thumbnails.py failed",
+                "stderr": fetch.stderr.strip()[-2000:],
+                "stdout": fetch.stdout.strip()[-3000:],
+            })
+        mirror = subprocess.run(
+            [sys.executable, str(SYNC_SCRIPT)],
+            cwd=str(ROOT_DIR),
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        if mirror.returncode != 0:
+            return self._send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {
+                "error": "sync_from_sheet.py failed after fetching thumbnails",
+                "stderr": mirror.stderr.strip()[-2000:],
+                "stdout": (fetch.stdout.strip()[-2000:] + "\n---\n" + mirror.stdout.strip()[-1000:]),
+            })
+        item_count = 0
+        try:
+            payload = json.loads(LIBRARY_FILE.read_text(encoding="utf-8"))
+            item_count = len(payload.get("items", []))
+        except Exception:
+            pass
+        return self._send_json(HTTPStatus.OK, {
+            "done": True,
+            "items": item_count,
+            "stdout": (fetch.stdout.strip()[-3000:] + "\n---\n" + mirror.stdout.strip()[-500:]),
+        })
+
+
+def _run_gh(args, timeout=30):
+    """Run gh CLI with given args. Returns CompletedProcess. Never raises."""
+    try:
+        return subprocess.run(
+            ["gh", *args],
+            cwd=str(ROOT_DIR),
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except FileNotFoundError:
+        return subprocess.CompletedProcess(args=args, returncode=127, stdout="", stderr="gh CLI not found on PATH")
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(args=args, returncode=124, stdout="", stderr=f"gh timed out after {timeout}s")
 
 
 def validate_site_config(config):
