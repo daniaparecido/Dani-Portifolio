@@ -5,10 +5,10 @@
  *
  * Source: data/library.json (full library) filtered by data/visible-ids.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-05-11 21:57
+ * Last updated: 2026-05-12 08:15
  */
 
-const totalYouTubeViews = 432585862;
+const totalYouTubeViews = 432599862;
 const totalYouTubeVideos = 572;
 
 const projects = [
@@ -66,6 +66,17 @@ const projects = [
         thumbnail: "images/thumbnails/C71usvjJhMM.jpg",
         url: "https://www.instagram.com/p/C71usvjJhMM/",
         previewVideo: "videos/previews/C71usvjJhMM.mp4"
+    },
+    {
+        title: "What an INSANE week for the Cavalry superfans! 🔥 There was fiery cheering, shouting at the top of our lungs, having unforgettable activities, and LOTS of support at #EWC2025! Those who lived it know..",
+        category: "short-form",
+        videoId: "DNdanV2MM2i",
+        platform: "instagram",
+        channelName: "Team Liquid",
+        viewCount: "172 likes",
+        thumbnail: "https://scontent-ord5-3.cdninstagram.com/v/t51.82787-15/532644466_18523582066040346_4252318526539857161_n.jpg?stp=dst-jpg_e15_fr_p1080x1080_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6ImltYWdlX3VybGdlbi4xMDgwLnNkci52aWRlb19kZWZhdWx0X2NvdmVyX2ZyYW1lLmMyIn0&_nc_ht=scontent-ord5-3.cdninstagram.com&_nc_cat=106&_nc_oc=Q6cZ2gEVqSH7UpBukZlp_2EezvqbEV-8RxHwUA5KNHV6_QNL5nud1BizVx2dAkiuk7E20co&_nc_ohc=bAZ4hE1ScXoQ7kNvwFG_F99&_nc_gid=0Tl6A9D7xlQthn1sWTAsKg&edm=ANTKIIoBAAAA&ccb=7-5&oh=00_Af7bKV_SS4jTIQrpEHyNd2J2KPOEfhIM7v8h9-D98iQP9w&oe=6A085205&_nc_sid=d885a2",
+        url: "https://www.instagram.com/reel/DNdanV2MM2i/",
+        previewVideo: "videos/previews/DNdanV2MM2i.mp4"
     },
     {
         title: "LEON REAGE AO SEU MEME MAIS PESADO",
