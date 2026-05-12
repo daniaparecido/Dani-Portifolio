@@ -1,11 +1,20 @@
 """TikTok client for fetching video data using yt-dlp."""
 
+import os
 import re
+import time
+import random
 import logging
 from typing import Optional
 import yt_dlp
 
 logger = logging.getLogger(__name__)
+
+# TikTok starts returning 403 / "unexpected response" when hit with many
+# requests in quick succession. Sleep a randomized interval between yt-dlp calls.
+# Tunable per run via env vars (shared with the Instagram client).
+_DEFAULT_DELAY_MIN = 2.0
+_DEFAULT_DELAY_MAX = 5.0
 
 
 def parse_duration(seconds) -> str:
@@ -37,6 +46,23 @@ class TikTokClient:
         elif cookies_from_browser:
             self.ydl_opts['cookiesfrombrowser'] = (cookies_from_browser,)
 
+        self._delay_min = float(os.environ.get("TRACKER_REQUEST_DELAY_MIN", _DEFAULT_DELAY_MIN))
+        self._delay_max = float(os.environ.get("TRACKER_REQUEST_DELAY_MAX", _DEFAULT_DELAY_MAX))
+        self._first_request = True
+
+    def _throttle(self):
+        """Sleep a randomized interval before the next yt-dlp call. No-op before
+        the first call, and when the max delay is set to 0."""
+        if self._first_request:
+            self._first_request = False
+            return
+        if self._delay_max <= 0:
+            return
+        lo, hi = sorted((self._delay_min, self._delay_max))
+        delay = random.uniform(lo, hi)
+        logger.debug(f"Throttling: sleeping {delay:.1f}s before next request")
+        time.sleep(delay)
+
     def extract_video_id(self, url: str) -> Optional[str]:
         """Extract video ID from TikTok URL."""
         patterns = [
@@ -59,6 +85,7 @@ class TikTokClient:
                 logger.warning(f"Could not extract video ID from: {url}")
                 continue
 
+            self._throttle()
             try:
                 self.request_count += 1
                 logger.info(f"Fetching: {url}")
@@ -104,6 +131,7 @@ class TikTokClient:
             if not video_id:
                 continue
 
+            self._throttle()
             try:
                 self.request_count += 1
                 logger.info(f"Fetching stats: {url}")

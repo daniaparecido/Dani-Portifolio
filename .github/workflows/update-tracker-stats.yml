@@ -53,7 +53,14 @@ jobs:
         run: pip install -r tracker/requirements.txt
 
       - name: Write TikTok cookies
-        run: echo "${{ secrets.TIKTOK_COOKIES }}" > tracker/tiktok/cookies.txt
+        run: |
+          printf '%s\n' "${{ secrets.TIKTOK_COOKIES }}" > tracker/tiktok/cookies.txt
+          # Strip a possible UTF-8 BOM and CR line endings the secret may carry.
+          sed -i '1s/^\xEF\xBB\xBF//; s/\r$//' tracker/tiktok/cookies.txt
+          # Fail loudly if it's not a Netscape cookie jar (otherwise every fetch
+          # silently 403s and the run still "succeeds" with 0 updates).
+          head -n1 tracker/tiktok/cookies.txt | grep -q 'HTTP Cookie File' || {
+            echo "::error::TIKTOK_COOKIES secret is not a Netscape-format cookies file (missing magic header line)."; exit 1; }
 
       - name: Populate new TikTok videos
         env:
@@ -83,7 +90,14 @@ jobs:
         run: pip install -r tracker/requirements.txt
 
       - name: Write Instagram cookies
-        run: echo "${{ secrets.INSTAGRAM_COOKIES }}" > tracker/instagram/cookies.txt
+        run: |
+          printf '%s\n' "${{ secrets.INSTAGRAM_COOKIES }}" > tracker/instagram/cookies.txt
+          # Strip a possible UTF-8 BOM and CR line endings the secret may carry.
+          sed -i '1s/^\xEF\xBB\xBF//; s/\r$//' tracker/instagram/cookies.txt
+          # Fail loudly if it's not a Netscape cookie jar (otherwise every fetch
+          # silently 403s and the run still "succeeds" with 0 updates).
+          head -n1 tracker/instagram/cookies.txt | grep -q 'HTTP Cookie File' || {
+            echo "::error::INSTAGRAM_COOKIES secret is not a Netscape-format cookies file (missing magic header line)."; exit 1; }
 
       - name: Populate new Instagram videos
         env:

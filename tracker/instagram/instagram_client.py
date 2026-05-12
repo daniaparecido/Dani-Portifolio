@@ -1,11 +1,21 @@
 """Instagram client for fetching video/reel data using yt-dlp."""
 
+import os
 import re
+import time
+import random
 import logging
 from typing import Optional
 import yt_dlp
 
 logger = logging.getLogger(__name__)
+
+# Instagram flags accounts whose sessionid fires many requests in quick
+# succession ("your account may be using automated stuff"). Sleep a randomized
+# interval between yt-dlp calls so the traffic looks human. Tunable per run via
+# env vars; defaults are deliberately conservative for Instagram.
+_DEFAULT_DELAY_MIN = 4.0
+_DEFAULT_DELAY_MAX = 9.0
 
 
 def parse_duration(seconds) -> str:
@@ -37,6 +47,23 @@ class InstagramClient:
         elif cookies_from_browser:
             self.ydl_opts['cookiesfrombrowser'] = (cookies_from_browser,)
 
+        self._delay_min = float(os.environ.get("TRACKER_REQUEST_DELAY_MIN", _DEFAULT_DELAY_MIN))
+        self._delay_max = float(os.environ.get("TRACKER_REQUEST_DELAY_MAX", _DEFAULT_DELAY_MAX))
+        self._first_request = True
+
+    def _throttle(self):
+        """Sleep a randomized interval before the next yt-dlp call. No-op before
+        the first call, and when the max delay is set to 0."""
+        if self._first_request:
+            self._first_request = False
+            return
+        if self._delay_max <= 0:
+            return
+        lo, hi = sorted((self._delay_min, self._delay_max))
+        delay = random.uniform(lo, hi)
+        logger.debug(f"Throttling: sleeping {delay:.1f}s before next request")
+        time.sleep(delay)
+
     def extract_post_id(self, url: str) -> Optional[str]:
         """Extract post/reel ID from Instagram URL."""
         patterns = [
@@ -60,6 +87,7 @@ class InstagramClient:
                 logger.warning(f"Could not extract post ID from: {url}")
                 continue
 
+            self._throttle()
             try:
                 self.request_count += 1
                 logger.info(f"Fetching: {url}")
@@ -105,6 +133,7 @@ class InstagramClient:
             if not post_id:
                 continue
 
+            self._throttle()
             try:
                 self.request_count += 1
                 logger.info(f"Fetching stats: {url}")
