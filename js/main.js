@@ -54,12 +54,18 @@
 
         // Static video count to the LEFT of the views odometer.
         // We don't animate this — Daniel doesn't edit a video every second.
-        if (typeof totalYouTubeVideos !== 'undefined' && totalYouTubeVideos > 0) {
+        // Counts every source sheet (YouTube long-form + Shorts, Instagram, TikTok);
+        // a cross-posted edit counts once per platform, hence "published" not "edited".
+        // Falls back to the YouTube-only count for an older projects.js without totalVideos.
+        const publishedCount = (typeof totalVideos !== 'undefined' && totalVideos > 0)
+            ? totalVideos
+            : (typeof totalYouTubeVideos !== 'undefined' ? totalYouTubeVideos : 0);
+        if (publishedCount > 0) {
             const videosStat = document.createElement('div');
             videosStat.className = 'hero-stat-count hero-stat-count--secondary';
             videosStat.innerHTML =
-                '<span class="hero-stat-number">' + totalYouTubeVideos.toLocaleString('en-US') + '</span>' +
-                '<span class="hero-stat-label">edited<br>videos</span>';
+                '<span class="hero-stat-number">' + publishedCount.toLocaleString('en-US') + '</span>' +
+                '<span class="hero-stat-label">published<br>videos</span>';
             counter.insertBefore(videosStat, stat);
         }
 
