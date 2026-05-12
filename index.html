@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css?v=10">
+    <link rel="stylesheet" href="css/styles.css?v=16">
 </head>
 <body>
     <header class="header">
@@ -63,11 +63,17 @@
     </div>
 
     <nav class="mobile-tabs" id="mobile-tabs">
-        <button class="mobile-tab active" data-tab="long-form">Long-form</button>
+        <button class="mobile-tab active" data-tab="featured">Featured</button>
+        <button class="mobile-tab" data-tab="long-form">Long-form</button>
         <button class="mobile-tab" data-tab="short-form">Short-form</button>
     </nav>
 
     <main class="main">
+        <section class="section featured-section" id="section-featured" hidden>
+            <h2 class="section-title">Featured</h2>
+            <div class="featured-container" id="featured-container"></div>
+        </section>
+
         <section class="section" id="section-long-form">
             <h2 class="section-title">Long-form</h2>
             <div class="grid" id="long-form-grid"></div>
@@ -88,7 +94,7 @@
     </footer>
 
     <!-- Lightbox Modal -->
-    <div class="lightbox" id="lightbox">
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Video player">
         <button class="lightbox-close" id="lightbox-close" aria-label="Close video">&times;</button>
         <div class="lightbox-content">
             <div class="video-container" id="video-container">
@@ -97,7 +103,7 @@
         </div>
     </div>
 
-    <script src="js/projects.js?v=10"></script>
-    <script src="js/main.js?v=10"></script>
+    <script src="js/projects.js?v=16"></script>
+    <script src="js/main.js?v=16"></script>
 </body>
 </html>

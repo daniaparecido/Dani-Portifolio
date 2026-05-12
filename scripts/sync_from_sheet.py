@@ -50,6 +50,7 @@ LIBRARY_FILE = DATA_DIR / "library.json"
 SITE_CONFIG_FILE = DATA_DIR / "site-config.json"
 PROJECTS_FILE = ROOT_DIR / "js" / "projects.js"
 THUMBS_DIR = ROOT_DIR / "images" / "thumbnails"
+PREVIEWS_DIR = ROOT_DIR / "videos" / "previews"
 
 YOUTUBE_LIBRARY_ID = "157LkGyuY_jMWwTWKu2w4Sh9lw0qHCURXKUufFfgOgqg"
 IGTT_LIBRARY_ID = "1jVd2XMhOI1MVqV9YtaBMVtXWU7IzkdZNuLYdkI5ZKdQ"
@@ -286,14 +287,65 @@ def escape_js(s):
     return (s or "").replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
 
+def project_obj(category, item):
+    """Legacy-shaped project dict for one library item (used by both the flat
+    `projects` array and the resolved `featured` groups)."""
+    platform = item["platform"]
+    if platform == "instagram":
+        display = format_count_display(item.get("likes"), "likes")
+    else:
+        display = format_count_display(item.get("views"), "views")
+    thumbnail = "" if platform == "youtube" else (item.get("thumbnail") or "")
+    preview_rel = f"videos/previews/{item['id']}.mp4"
+    has_preview = (PREVIEWS_DIR / f"{item['id']}.mp4").exists()
+    return {
+        "title": item.get("title", ""),
+        "category": category,
+        "videoId": item["id"],
+        "platform": platform,
+        "channelName": item.get("channel", ""),
+        "viewCount": display,
+        "thumbnail": thumbnail,
+        "url": item.get("url", ""),
+        "previewVideo": preview_rel if has_preview else "",
+    }
+
+
+def resolve_featured(by_id, site_config):
+    """Resolve site-config.json `featured` groups into full project objects.
+
+    Each output group is {longForm: <project>, shortForm: [<project>, ...]}.
+    Missing IDs are skipped with a warning; a group with no resolvable long-form
+    is dropped entirely (nothing to anchor it on)."""
+    out = []
+    for group in site_config.get("featured", []):
+        lf_id = group.get("long_form_id")
+        lf = by_id.get(lf_id)
+        if lf is None:
+            print(f"  WARNING: featured long_form_id {lf_id!r} not found in library; skipping group")
+            continue
+        shorts = []
+        for sid in group.get("short_form_ids", []):
+            s = by_id.get(sid)
+            if s is None:
+                print(f"  WARNING: featured short_form_id {sid!r} not found in library; skipping")
+                continue
+            shorts.append(project_obj(s.get("category", "short-form"), s))
+        out.append({
+            "longForm": project_obj(lf.get("category", "long-form"), lf),
+            "shortForm": shorts,
+        })
+    return out
+
+
 def generate_projects_js(library, site_config, totals):
-    """Build js/projects.js from the legacy-shaped projects array,
-    filtered to whatever data/site-config.json marks as visible.
+    """Build js/projects.js: a legacy-shaped `projects` array (the flat grids)
+    plus a resolved `featured` array (the curated hero groups), both filtered to
+    whatever data/site-config.json marks as visible.
 
     Iterates sections in order; within each section, iterates video_ids in
-    order. The legacy front-end does not understand the featured carousel,
-    so featured groups don't materialize here, they're picked up by the
-    redesigned front-end directly from site-config.json.
+    order. `featured` groups are resolved from site-config.json directly so the
+    front-end gets full video objects without fetching the big library.json.
     """
     by_id = {item["id"]: item for item in library}
     ordered = []
@@ -310,13 +362,15 @@ def generate_projects_js(library, site_config, totals):
         for category, vid in missing:
             print(f"  WARNING: site-config id {vid} ({category}) not found in library")
 
+    featured = resolve_featured(by_id, site_config)
+
     lines = [
         "/**",
         " * ============================================",
         " * PROJECT DATA - AUTO-GENERATED FROM GOOGLE SHEETS",
         " * ============================================",
         " *",
-        " * Source: data/library.json (full library) filtered by data/visible-ids.json.",
+        " * Source: data/library.json (full library) filtered by data/site-config.json.",
         " * To regenerate, run: python scripts/sync_from_sheet.py",
         f" * Last updated: {get_timestamp()}",
         " */",
@@ -327,26 +381,27 @@ def generate_projects_js(library, site_config, totals):
         "const projects = [",
     ]
     for category, item in ordered:
-        platform = item["platform"]
-        if platform == "instagram":
-            display = format_count_display(item.get("likes"), "likes")
-        else:
-            display = format_count_display(item.get("views"), "views")
-        thumbnail = "" if platform == "youtube" else (item.get("thumbnail") or "")
+        obj = project_obj(category, item)
         lines += [
             "    {",
-            f'        title: "{escape_js(item.get("title", ""))}",',
-            f'        category: "{category}",',
-            f'        videoId: "{item["id"]}",',
-            f'        platform: "{platform}",',
-            f'        channelName: "{escape_js(item.get("channel", ""))}",',
-            f'        viewCount: "{display}",',
-            f'        thumbnail: "{thumbnail}",',
-            f'        url: "{item.get("url", "")}",',
-            f'        previewVideo: "videos/previews/{item["id"]}.mp4"',
+            f'        title: "{escape_js(obj["title"])}",',
+            f'        category: "{obj["category"]}",',
+            f'        videoId: "{obj["videoId"]}",',
+            f'        platform: "{obj["platform"]}",',
+            f'        channelName: "{escape_js(obj["channelName"])}",',
+            f'        viewCount: "{obj["viewCount"]}",',
+            f'        thumbnail: "{obj["thumbnail"]}",',
+            f'        url: "{obj["url"]}",',
+            f'        previewVideo: "{obj["previewVideo"]}"',
             "    },",
         ]
     lines += ["];", ""]
+    lines += [
+        "// Curated hero groups: one big long-form video + companion shorts each.",
+        "// Resolved from data/site-config.json at sync time.",
+        "const featured = " + json.dumps(featured, ensure_ascii=False, indent=2) + ";",
+        "",
+    ]
     return "\n".join(lines)
 
 

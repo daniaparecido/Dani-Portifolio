@@ -635,6 +635,118 @@ button {
 }
 
 /* ========================================
+   Featured Section
+   ======================================== */
+/* One big 16:9 long-form tile with its title above it, plus a captioned column
+   of companion vertical shorts beside it (sized to roughly match the tile's
+   height via a 60/40 split). Groups stack vertically; everything stacks on
+   mobile. */
+.featured-container {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.featured-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.featured-main {
+    flex: 6 1 0;
+    min-width: 0;
+}
+
+/* Prominent uppercase channel eyebrow above the big tile, so each featured
+   group reads as a labelled block. Mirrors the "RELATED SHORTS" label style. */
+.featured-eyebrow {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #888888;
+    margin-bottom: 10px;
+}
+
+.featured-main .grid-item-thumb {
+    aspect-ratio: 16 / 9;
+}
+
+/* Title/meta sit below the thumbnail like a normal card; just a touch more
+   breathing room and a larger title to match the tile's scale. */
+.featured-main .grid-item-overlay {
+    padding: 12px 4px 0;
+}
+
+.featured-main .grid-item-title {
+    font-size: 16px;
+    font-weight: 500;
+    white-space: normal;
+    margin-bottom: 3px;
+}
+
+.featured-main .grid-item-meta {
+    font-size: 12px;
+}
+
+/* The big tile dwarfs the regular grid items, so the global 1.10 hover zoom is
+   far too aggressive here — keep just a subtle inner-image zoom and a lift. */
+.featured-main .grid-item:hover,
+.featured-main .grid-item.preview-active {
+    transform: none;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.9);
+}
+
+.featured-main .grid-item:hover .grid-item-thumb img {
+    transform: scale(1.04);
+}
+
+.featured-shorts {
+    flex: 4 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-left: 1px solid #222222;
+    padding-left: 20px;
+}
+
+.featured-shorts-label {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #666666;
+}
+
+.featured-shorts-row {
+    display: flex;
+    gap: 8px;
+}
+
+.featured-shorts-row .grid-item {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.featured-shorts .grid-item:hover {
+    transform: scale(1.04);
+}
+
+.featured-shorts .grid-item-thumb {
+    aspect-ratio: 9 / 16;
+}
+
+/* Visible divider between stacked featured groups so each project reads as a
+   distinct block rather than blending into the next one. */
+.featured-group + .featured-group {
+    border-top: 1px solid #222222;
+    padding-top: 32px;
+}
+
+/* ========================================
    Lightbox Modal
    ======================================== */
 .lightbox {
@@ -1049,12 +1161,14 @@ button {
         font-size: 11px;
     }
 
-    /* Mobile tabs */
+    /* Mobile tabs — pinned directly below the (also sticky) header.
+       --header-h is measured in JS so the tabs sit flush even as the header
+       wraps to different heights; the 96px fallback covers first paint. */
     .mobile-tabs {
         display: flex;
         position: sticky;
-        top: 0;
-        z-index: 99;
+        top: var(--header-h, 96px);
+        z-index: 150;
         background-color: #000000;
         border-bottom: 1px solid #222222;
         padding: 0;
@@ -1062,11 +1176,11 @@ button {
 
     .mobile-tab {
         flex: 1;
-        padding: 12px 0;
+        padding: 12px 4px;
         font-family: inherit;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 400;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.04em;
         text-transform: uppercase;
         color: #666666;
         background: none;
@@ -1095,15 +1209,56 @@ button {
         margin-bottom: 0;
     }
 
+    /* Featured is its own tab on mobile, so stack the main + shorts layout */
+    .featured-container {
+        gap: 20px;
+    }
+
+    .featured-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .featured-group + .featured-group {
+        padding-top: 20px;
+    }
+
+    .featured-shorts {
+        border-left: none;
+        padding-left: 0;
+        gap: 6px;
+    }
+
+    .featured-shorts-row {
+        gap: 6px;
+    }
+
+    .featured-eyebrow {
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        margin-bottom: 6px;
+    }
+
+    .featured-main .grid-item-overlay {
+        padding: 8px 2px 0;
+    }
+
+    .featured-main .grid-item-title {
+        font-size: 13px;
+    }
+
+    .featured-main .grid-item-meta {
+        font-size: 10px;
+    }
+
     /* Hide inactive section on mobile */
     .section.mobile-hidden {
         display: none;
     }
 
-    /* Unstick the header on mobile — tabs take over sticky */
-    .header {
-        position: relative;
-    }
+    /* Header stays sticky on mobile too (base .header is sticky top:0 z-index:200);
+       the mobile tabs pin just below it via --header-h. */
 
     .main {
         padding: 8px;

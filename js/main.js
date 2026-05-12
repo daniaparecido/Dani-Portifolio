@@ -252,11 +252,18 @@
     /**
      * Create a single grid item element
      */
-    function createGridItem(project) {
+    function createGridItem(project, opts) {
+        opts = opts || {};
+        // In showcase contexts (the Featured hero tile + its shorts) we never want
+        // the bare YouTube embed on hover — its player chrome ("More videos", logo,
+        // pause button) looks bad blown up. Use the local clip if there is one, else
+        // just keep the static thumbnail.
+        const allowIframePreview = !opts.noIframePreview;
         const item = document.createElement('div');
         const videoId = project.videoId || project.youtubeId;
         const platform = project.platform || 'youtube';
-        const canPreview = hasLocalPreview(project) || platform === 'youtube';
+        const canUseIframePreview = platform === 'youtube' && allowIframePreview;
+        const canPreview = hasLocalPreview(project) || canUseIframePreview;
         const isVertical = platform === 'instagram' || platform === 'tiktok';
 
         item.className = 'grid-item' + (canPreview ? ' has-preview' : '') + (isVertical ? ' vertical-item' : '');
@@ -292,42 +299,53 @@
 
         // Hover preview handlers (desktop only)
         let hoverTimeout;
+        let isHovering = false;
         const previewContainer = item.querySelector('.grid-item-preview');
+
+        function showIframePreview() {
+            const previewUrl = getYouTubePreviewUrl(videoId);
+            previewContainer.innerHTML = `<iframe src="${previewUrl}" title="Video preview" allow="autoplay; encrypted-media" loading="lazy"></iframe>`;
+            item.classList.add('preview-active');
+        }
 
         item.addEventListener('mouseenter', () => {
             if (!canPreview) return;
+            isHovering = true;
 
             // Delay before loading preview (like YouTube)
             hoverTimeout = setTimeout(() => {
+                if (!isHovering) return;
                 if (hasLocalPreview(project)) {
-                    // Use local video file for preview
-                    previewContainer.innerHTML = `
-                        <video
-                            src="${project.previewVideo}"
-                            autoplay
-                            muted
-                            loop
-                            playsinline
-                            preload="none">
-                        </video>
-                    `;
-                } else if (platform === 'youtube') {
-                    // Fallback to YouTube iframe
-                    const previewUrl = getYouTubePreviewUrl(videoId);
-                    previewContainer.innerHTML = `
-                        <iframe
-                            src="${previewUrl}"
-                            title="Video preview"
-                            allow="autoplay; encrypted-media"
-                            loading="lazy">
-                        </iframe>
-                    `;
+                    // Use the local clip. Only reveal it (preview-active) once a frame
+                    // is decoded so we never flash a black box; if the clip is missing
+                    // or unplayable, fall back to the iframe (when allowed) or just
+                    // leave the thumbnail. All async callbacks bail if the mouse left.
+                    const video = document.createElement('video');
+                    video.muted = true;
+                    video.loop = true;
+                    video.playsInline = true;
+                    video.preload = 'auto';
+                    video.addEventListener('loadeddata', () => {
+                        if (!isHovering || !previewContainer.contains(video)) return;
+                        item.classList.add('preview-active');
+                        video.play().catch(() => {});
+                    });
+                    video.addEventListener('error', () => {
+                        if (!isHovering || !previewContainer.contains(video)) return;
+                        previewContainer.innerHTML = '';
+                        item.classList.remove('preview-active');
+                        if (canUseIframePreview) showIframePreview();
+                    });
+                    video.src = project.previewVideo;
+                    previewContainer.appendChild(video);
+                } else if (canUseIframePreview) {
+                    showIframePreview();
                 }
-                item.classList.add('preview-active');
             }, 500);
         });
 
         item.addEventListener('mouseleave', () => {
+            isHovering = false;
             clearTimeout(hoverTimeout);
             item.classList.remove('preview-active');
             // Clean up video to release memory
@@ -357,9 +375,90 @@
         });
     }
 
+    /**
+     * Render the curated "Featured" section: one big long-form tile with a
+     * small row of companion shorts beside it, groups stacked vertically.
+     * Data comes from the `featured` global in projects.js (auto-generated);
+     * if it's missing or empty the section stays hidden.
+     */
+    function renderFeatured() {
+        const section = document.getElementById('section-featured');
+        const container = document.getElementById('featured-container');
+        if (!section || !container) return;
+        if (typeof featured === 'undefined' || !Array.isArray(featured) || featured.length === 0) {
+            return; // section keeps its `hidden` attribute
+        }
+
+        container.innerHTML = '';
+        featured.forEach(group => {
+            if (!group || !group.longForm) return;
+
+            const groupEl = document.createElement('div');
+            groupEl.className = 'featured-group';
+
+            const mainEl = document.createElement('div');
+            mainEl.className = 'featured-main';
+
+            const eyebrow = document.createElement('span');
+            eyebrow.className = 'featured-eyebrow';
+            eyebrow.textContent = group.longForm.channelName || 'Featured project';
+            mainEl.appendChild(eyebrow);
+
+            mainEl.appendChild(createGridItem(group.longForm, { noIframePreview: true }));
+            groupEl.appendChild(mainEl);
+
+            const shorts = Array.isArray(group.shortForm) ? group.shortForm : [];
+            if (shorts.length) {
+                const shortsEl = document.createElement('div');
+                shortsEl.className = 'featured-shorts';
+
+                const label = document.createElement('span');
+                label.className = 'featured-shorts-label';
+                label.textContent = 'Related shorts';
+                shortsEl.appendChild(label);
+
+                const row = document.createElement('div');
+                row.className = 'featured-shorts-row';
+                shorts.forEach(s => row.appendChild(createGridItem(s)));
+                shortsEl.appendChild(row);
+
+                groupEl.appendChild(shortsEl);
+            }
+
+            container.appendChild(groupEl);
+        });
+
+        section.hidden = false;
+    }
+
     // ============================================
     // Lightbox
     // ============================================
+
+    // Element that had focus before the lightbox opened, so we can restore it on close.
+    let lightboxReturnFocus = null;
+
+    function getLightboxFocusable() {
+        if (!lightbox) return [];
+        return Array.from(lightbox.querySelectorAll(
+            'button, a[href], video, iframe, [tabindex]:not([tabindex="-1"])'
+        )).filter(el => el.offsetParent !== null || el === document.activeElement);
+    }
+
+    // Shared "lightbox is now open" finalisation: show it, lock scroll, move focus
+    // to the close button, and remember where focus came from.
+    function activateLightbox() {
+        lightboxReturnFocus = document.activeElement;
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        // Defer focus a tick: the lightbox transitions from visibility:hidden,
+        // and a not-yet-visible element can't receive focus on the same frame.
+        if (lightboxClose) {
+            setTimeout(() => {
+                if (lightbox.classList.contains('active')) lightboxClose.focus();
+            }, 0);
+        }
+    }
 
     /**
      * Open the lightbox with a YouTube video
@@ -392,8 +491,7 @@
             </a>
         `);
 
-        lightbox.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        activateLightbox();
     }
 
     /**
@@ -435,8 +533,7 @@
             </a>
         `);
 
-        lightbox.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        activateLightbox();
     }
 
     /**
@@ -459,6 +556,12 @@
         const btn = videoContainer.parentElement.querySelector('.watch-on-platform');
         if (btn) btn.remove();
         document.body.style.overflow = '';
+
+        // Restore focus to whatever opened the lightbox.
+        if (lightboxReturnFocus && typeof lightboxReturnFocus.focus === 'function') {
+            lightboxReturnFocus.focus();
+        }
+        lightboxReturnFocus = null;
     }
 
     /**
@@ -478,8 +581,30 @@
         });
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            if (!lightbox.classList.contains('active')) return;
+
+            if (e.key === 'Escape') {
                 closeLightbox();
+                return;
+            }
+
+            // Trap Tab focus inside the lightbox while it's open.
+            if (e.key === 'Tab') {
+                const focusable = getLightboxFocusable();
+                if (focusable.length === 0) {
+                    e.preventDefault();
+                    return;
+                }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                const active = document.activeElement;
+                if (e.shiftKey && (active === first || !lightbox.contains(active))) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && (active === last || !lightbox.contains(active))) {
+                    e.preventDefault();
+                    first.focus();
+                }
             }
         });
     }
@@ -496,15 +621,28 @@
         const tabsContainer = document.getElementById('mobile-tabs');
         if (!tabsContainer) return;
 
-        const tabs = tabsContainer.querySelectorAll('.mobile-tab');
+        const featuredSection = document.getElementById('section-featured');
         const longFormSection = document.getElementById('section-long-form');
         const shortFormSection = document.getElementById('section-short-form');
+
+        // The Featured section is `hidden` until renderFeatured() finds data.
+        // If there's nothing to show, drop the Featured tab so it can't be selected.
+        const featuredTab = tabsContainer.querySelector('.mobile-tab[data-tab="featured"]');
+        if (featuredTab && (!featuredSection || featuredSection.hidden)) {
+            featuredTab.remove();
+        }
+
+        const tabs = tabsContainer.querySelectorAll('.mobile-tab');
+        const defaultTab = tabsContainer.querySelector('.mobile-tab').dataset.tab;
 
         function switchTab(tabName) {
             tabs.forEach(function(t) {
                 t.classList.toggle('active', t.dataset.tab === tabName);
             });
 
+            if (featuredSection && !featuredSection.hidden) {
+                featuredSection.classList.toggle('mobile-hidden', tabName !== 'featured');
+            }
             if (longFormSection) {
                 longFormSection.classList.toggle('mobile-hidden', tabName !== 'long-form');
             }
@@ -519,10 +657,10 @@
             });
         });
 
-        // Set initial state: show long-form, hide short-form
+        // Set initial state on mobile: show the first tab's section
         var isMobile = window.matchMedia('(max-width: 768px)').matches;
         if (isMobile) {
-            switchTab('long-form');
+            switchTab(defaultTab);
         }
 
         // Listen for resize to show/hide sections appropriately
@@ -530,13 +668,32 @@
             if (e.matches) {
                 // Switched to mobile — apply active tab
                 var activeTab = tabsContainer.querySelector('.mobile-tab.active');
-                switchTab(activeTab ? activeTab.dataset.tab : 'long-form');
+                switchTab(activeTab ? activeTab.dataset.tab : defaultTab);
             } else {
-                // Switched to desktop — show both sections
+                // Switched to desktop — show all sections
+                if (featuredSection) featuredSection.classList.remove('mobile-hidden');
                 if (longFormSection) longFormSection.classList.remove('mobile-hidden');
                 if (shortFormSection) shortFormSection.classList.remove('mobile-hidden');
             }
         });
+    }
+
+    // Keep --header-h in sync with the real header height so the mobile sticky
+    // tabs pin flush below the (also sticky) header even as it wraps to 1-3 rows.
+    function initStickyHeaderOffset() {
+        const header = document.querySelector('.header');
+        if (!header) return;
+        const apply = () => {
+            document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+        };
+        apply();
+        window.addEventListener('resize', apply);
+        if (typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(apply).observe(header);
+        }
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(apply);
+        }
     }
 
     function initVideoListDropdown() {
@@ -588,6 +745,7 @@
         const longFormProjects = projects.filter(p => p.category === 'long-form');
         const shortFormProjects = projects.filter(p => p.category === 'short-form');
 
+        renderFeatured();
         renderGrid(longFormGrid, longFormProjects);
         renderGrid(shortFormGrid, shortFormProjects);
         initLightbox();
@@ -595,6 +753,7 @@
         initCopyEmail();
         updateViewCounter();
         initMobileTabs();
+        initStickyHeaderOffset();
     }
 
     if (document.readyState === 'loading') {

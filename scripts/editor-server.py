@@ -34,6 +34,7 @@ LIBRARY_FILE = DATA_DIR / "library.json"
 SITE_CONFIG_FILE = DATA_DIR / "site-config.json"
 SYNC_SCRIPT = ROOT_DIR / "scripts" / "sync_from_sheet.py"
 FETCH_THUMBS_SCRIPT = ROOT_DIR / "scripts" / "fetch_thumbnails.py"
+PROCESS_PREVIEWS_SCRIPT = ROOT_DIR / "scripts" / "process_previews.py"
 TRACKER_WORKFLOW = "update-tracker-stats.yml"
 
 # Explicit allowlist of paths we will serve. Keeps the surface tiny.
@@ -106,8 +107,9 @@ class EditorHandler(BaseHTTPRequestHandler):
             return self._handle_update_stats()
         if self.path == "/api/sync-local":
             return self._handle_sync_local()
-        if self.path == "/api/fetch-thumbnails":
-            return self._handle_fetch_thumbnails()
+        if self.path in ("/api/refresh-assets", "/api/fetch-thumbnails"):
+            # /api/fetch-thumbnails kept as a backwards-compatible alias.
+            return self._handle_refresh_assets()
         self.send_error(HTTPStatus.NOT_FOUND)
 
     def _handle_save(self):
@@ -221,29 +223,50 @@ class EditorHandler(BaseHTTPRequestHandler):
             "stdout": proc.stdout.strip()[-2000:],
         })
 
-    def _handle_fetch_thumbnails(self):
-        """Re-download fresh Instagram/TikTok thumbnails, then re-mirror library.json.
+    def _handle_refresh_assets(self):
+        """Download only the *missing* local assets, then re-mirror library.json.
 
-        IG/TikTok CDN thumbnail URLs in the source sheets are signed and expire after
-        a few weeks (oe= / x-expires=), so the cards go black. fetch_thumbnails.py uses
-        yt-dlp (with the local cookies jars when present) to re-resolve each post and
-        write images/thumbnails/{id}.jpg; then sync_from_sheet.py re-mirrors so
-        library.json points at the now-local files. Instagram in particular needs a
-        logged-in cookies file; missing/expired cookies surface in the stderr below.
+        Two passes, both missing-only (re-downloading what is already on disk risks
+        a rate-limit, so neither pass touches existing files):
+          1. fetch_thumbnails.py -- re-resolves IG/TikTok posts whose local
+             images/thumbnails/{id}.jpg is missing (their signed CDN URLs in the
+             source sheets expire after a few weeks, so cards go black). Uses yt-dlp
+             with the local cookies jars when present; Instagram needs a logged-in
+             jar, and missing/expired cookies surface in the stderr below.
+          2. process_previews.py -- generates videos/previews/{id}.mp4 for every
+             YouTube video referenced in js/projects.js that has no preview (or
+             source) clip yet, via the no-SNI HLS bypass (immune to 429) with a
+             yt-dlp fallback.
+        Then sync_from_sheet.py re-mirrors so library.json / projects.js point at the
+        now-local files. Exposed as POST /api/refresh-assets (and the legacy alias
+        POST /api/fetch-thumbnails).
         """
-        fetch = subprocess.run(
+        thumbs = subprocess.run(
             [sys.executable, str(FETCH_THUMBS_SCRIPT), "--delay", "1.2"],
             cwd=str(ROOT_DIR),
             capture_output=True,
             text=True,
             timeout=1800,
         )
-        if fetch.returncode != 0:
+        if thumbs.returncode != 0:
             return self._send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {
                 "error": "fetch_thumbnails.py failed",
-                "stderr": fetch.stderr.strip()[-2000:],
-                "stdout": fetch.stdout.strip()[-3000:],
+                "stderr": thumbs.stderr.strip()[-2000:],
+                "stdout": thumbs.stdout.strip()[-3000:],
             })
+
+        # process_previews.py exits 1 when *some* clip failed (the rest still
+        # succeeded), so a non-zero return code here is not fatal -- surface its
+        # output and keep going. Only a crash (no usable output) is a hard error.
+        previews = subprocess.run(
+            [sys.executable, str(PROCESS_PREVIEWS_SCRIPT)],
+            cwd=str(ROOT_DIR),
+            capture_output=True,
+            text=True,
+            timeout=2400,
+        )
+        previews_failed = previews.returncode != 0
+
         mirror = subprocess.run(
             [sys.executable, str(SYNC_SCRIPT)],
             cwd=str(ROOT_DIR),
@@ -251,11 +274,16 @@ class EditorHandler(BaseHTTPRequestHandler):
             text=True,
             timeout=180,
         )
+        combined_stdout = (
+            "[thumbnails]\n" + thumbs.stdout.strip()[-2500:]
+            + "\n\n[previews]\n" + previews.stdout.strip()[-2500:]
+            + "\n\n[mirror]\n" + mirror.stdout.strip()[-800:]
+        )
         if mirror.returncode != 0:
             return self._send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {
-                "error": "sync_from_sheet.py failed after fetching thumbnails",
+                "error": "sync_from_sheet.py failed after refreshing assets",
                 "stderr": mirror.stderr.strip()[-2000:],
-                "stdout": (fetch.stdout.strip()[-2000:] + "\n---\n" + mirror.stdout.strip()[-1000:]),
+                "stdout": combined_stdout,
             })
         item_count = 0
         try:
@@ -266,7 +294,8 @@ class EditorHandler(BaseHTTPRequestHandler):
         return self._send_json(HTTPStatus.OK, {
             "done": True,
             "items": item_count,
-            "stdout": (fetch.stdout.strip()[-3000:] + "\n---\n" + mirror.stdout.strip()[-500:]),
+            "previews_partial_failure": previews_failed,
+            "stdout": combined_stdout,
         })
 
 

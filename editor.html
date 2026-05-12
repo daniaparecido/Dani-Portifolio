@@ -121,7 +121,7 @@ img.thumb-empty { background: var(--panel-2); }
     <span id="status" class="status">Loading...</span>
     <span class="grow"></span>
     <button id="addFeatured">+ Add featured group</button>
-    <button id="fetchThumbs" title="Re-download Instagram/TikTok thumbnails (their CDN URLs expire), then reload">Fetch thumbnails</button>
+    <button id="fetchThumbs" title="Download only the missing IG/TikTok thumbnails and missing YouTube hover-preview clips (never re-downloads what's already on disk), then reload">Download missing assets</button>
     <button id="populateVideos" title="Fill in brand-new rows that only have a URL in the source sheets, then mirror locally">Populate new videos</button>
     <button id="refreshStats" title="Refresh view/like/comment counts on rows that haven't been updated recently, then mirror locally">Refresh stats</button>
     <a id="reload" href="#" class="link-btn" title="Re-read local files only (no remote refresh)">Reload local</a>
@@ -555,21 +555,22 @@ async function runTracker(mode, btn) {
 }
 
 async function fetchThumbs() {
-  if (state.dirty && !confirm("Fetch thumbnails reloads data when done. Discard unsaved changes?")) return;
+  if (state.dirty && !confirm("Downloading missing assets reloads data when done. Discard unsaved changes?")) return;
   const btn = $("#fetchThumbs");
   btn.disabled = true;
   try {
-    setStatus("Re-downloading Instagram/TikTok thumbnails... (this can take a minute)");
-    const res = await fetch("/api/fetch-thumbnails", { method: "POST" });
+    setStatus("Downloading missing thumbnails + preview clips... (this can take a few minutes)");
+    const res = await fetch("/api/refresh-assets", { method: "POST" });
     const data = await res.json();
     if (!res.ok || !data.done) {
-      setStatus("Fetch thumbnails failed: " + (data.error || data.stderr || res.status), "err");
+      setStatus("Download missing assets failed: " + (data.error || data.stderr || res.status), "err");
       return;
     }
     await load();
-    setStatus(`Thumbnails refreshed. ${data.items} library items reloaded.`, "ok");
+    const note = data.previews_partial_failure ? " (some preview clips failed -- see server log)" : "";
+    setStatus(`Assets refreshed. ${data.items} library items reloaded.${note}`, data.previews_partial_failure ? "err" : "ok");
   } catch (e) {
-    setStatus("Fetch thumbnails failed: " + e.message, "err");
+    setStatus("Download missing assets failed: " + e.message, "err");
   } finally {
     btn.disabled = false;
   }

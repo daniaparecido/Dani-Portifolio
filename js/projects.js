@@ -3,9 +3,9 @@
  * PROJECT DATA - AUTO-GENERATED FROM GOOGLE SHEETS
  * ============================================
  *
- * Source: data/library.json (full library) filtered by data/visible-ids.json.
+ * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-05-12 08:15
+ * Last updated: 2026-05-12 11:58
  */
 
 const totalYouTubeViews = 432599862;
@@ -74,9 +74,9 @@ const projects = [
         platform: "instagram",
         channelName: "Team Liquid",
         viewCount: "172 likes",
-        thumbnail: "https://scontent-ord5-3.cdninstagram.com/v/t51.82787-15/532644466_18523582066040346_4252318526539857161_n.jpg?stp=dst-jpg_e15_fr_p1080x1080_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6ImltYWdlX3VybGdlbi4xMDgwLnNkci52aWRlb19kZWZhdWx0X2NvdmVyX2ZyYW1lLmMyIn0&_nc_ht=scontent-ord5-3.cdninstagram.com&_nc_cat=106&_nc_oc=Q6cZ2gEVqSH7UpBukZlp_2EezvqbEV-8RxHwUA5KNHV6_QNL5nud1BizVx2dAkiuk7E20co&_nc_ohc=bAZ4hE1ScXoQ7kNvwFG_F99&_nc_gid=0Tl6A9D7xlQthn1sWTAsKg&edm=ANTKIIoBAAAA&ccb=7-5&oh=00_Af7bKV_SS4jTIQrpEHyNd2J2KPOEfhIM7v8h9-D98iQP9w&oe=6A085205&_nc_sid=d885a2",
+        thumbnail: "images/thumbnails/DNdanV2MM2i.jpg",
         url: "https://www.instagram.com/reel/DNdanV2MM2i/",
-        previewVideo: "videos/previews/DNdanV2MM2i.mp4"
+        previewVideo: ""
     },
     {
         title: "LEON REAGE AO SEU MEME MAIS PESADO",
@@ -232,4 +232,83 @@ const projects = [
         url: "https://www.youtube.com/watch?v=TZfM1yfkFn4",
         previewVideo: "videos/previews/TZfM1yfkFn4.mp4"
     },
+];
+
+// Curated hero groups: one big long-form video + companion shorts each.
+// Resolved from data/site-config.json at sync time.
+const featured = [
+  {
+    "longForm": {
+      "title": "Beat Me, Get $1000",
+      "category": "long-form",
+      "videoId": "DW3F1OHfZeo",
+      "platform": "youtube",
+      "channelName": "Team Liquid League of Legends",
+      "viewCount": "435K views",
+      "thumbnail": "",
+      "url": "https://www.youtube.com/watch?v=DW3F1OHfZeo",
+      "previewVideo": "videos/previews/DW3F1OHfZeo.mp4"
+    },
+    "shortForm": [
+      {
+        "title": "Beat me, win $500 #leagueoflegends",
+        "category": "short-form",
+        "videoId": "1m9rl_lxits",
+        "platform": "youtube",
+        "channelName": "Team Liquid League of Legends",
+        "viewCount": "36K views",
+        "thumbnail": "",
+        "url": "https://www.youtube.com/shorts/1m9rl_lxits",
+        "previewVideo": "videos/previews/1m9rl_lxits.mp4"
+      },
+      {
+        "title": "I lost $1000 playing League",
+        "category": "short-form",
+        "videoId": "scK-D1Eg7PY",
+        "platform": "youtube",
+        "channelName": "Team Liquid League of Legends",
+        "viewCount": "1.0M views",
+        "thumbnail": "",
+        "url": "https://www.youtube.com/shorts/scK-D1Eg7PY?feature=share",
+        "previewVideo": "videos/previews/scK-D1Eg7PY.mp4"
+      }
+    ]
+  },
+  {
+    "longForm": {
+      "title": "5 CS Pros. 7 Maps. Only One Survives!",
+      "category": "long-form",
+      "videoId": "DaEP-ij-1KA",
+      "platform": "youtube",
+      "channelName": "Team Liquid CS2 | Counter Strike",
+      "viewCount": "2K views",
+      "thumbnail": "",
+      "url": "https://www.youtube.com/watch?v=DaEP-ij-1KA",
+      "previewVideo": "videos/previews/DaEP-ij-1KA.mp4"
+    },
+    "shortForm": [
+      {
+        "title": "Who will be the Last Pro Standing? Head over to our newest video to find out! #duelbits #cs2",
+        "category": "short-form",
+        "videoId": "AT9g-2yrS5s",
+        "platform": "youtube",
+        "channelName": "Team Liquid CS2 | Counter Strike",
+        "viewCount": "4K views",
+        "thumbnail": "",
+        "url": "https://www.youtube.com/shorts/AT9g-2yrS5s",
+        "previewVideo": "videos/previews/AT9g-2yrS5s.mp4"
+      },
+      {
+        "title": "\"Maybe Shoot Back, Kamil\" was diabolical.  #duelbits #cs2 #csgo #counterstrike #cs2overpass #gaming",
+        "category": "short-form",
+        "videoId": "UkEXXO-o8b8",
+        "platform": "youtube",
+        "channelName": "Team Liquid CS2 | Counter Strike",
+        "viewCount": "3K views",
+        "thumbnail": "",
+        "url": "https://www.youtube.com/shorts/UkEXXO-o8b8",
+        "previewVideo": "videos/previews/UkEXXO-o8b8.mp4"
+      }
+    ]
+  }
 ];
