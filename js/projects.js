@@ -5,7 +5,7 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-05-12 18:04
+ * Last updated: 2026-05-12 18:21
  */
 
 const totalYouTubeViews = 432609862;
@@ -120,7 +120,7 @@ const projects = [
         viewCount: "1K likes",
         thumbnail: "images/thumbnails/DDprhgUyhfZ.jpg",
         url: "https://www.instagram.com/p/DDprhgUyhfZ/",
-        previewVideo: ""
+        previewVideo: "videos/previews/DDprhgUyhfZ.mp4"
     },
     {
         title: "Renderizar em segundos um projeto que levaria horas no seu PC? 👀 Vem pra Noar e dê um upgrade nos seus projetos! 🤘🏻😎 #Noarcloud #Cloudpc #Render #Design #Photoshop #Premiere #Ilustrator",
