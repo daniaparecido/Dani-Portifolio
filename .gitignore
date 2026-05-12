@@ -61,3 +61,24 @@ CLAUDE.md
 
 # Node modules (if any)
 node_modules/
+
+# Local-only tooling (not needed for the published site or CI; keep private)
+editor.html
+electron/
+scripts/editor-server.py
+scripts/editor-app.bat
+scripts/run-editor.bat
+scripts/process_previews.py
+scripts/yt_hls_manifest.py
+scripts/fetch_thumbnails.py
+scripts/process-videos.ps1
+scripts/process-videos.bat
+scripts/sync-videos.bat
+scripts/update-portfolio.bat
+scripts/refresh-cookies.bat
+scripts/refresh-cookies.ps1
+scripts/inspect_sheets.py
+
+# Working files / drafts
+draft.psd
+.tmp/
