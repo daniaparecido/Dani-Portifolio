@@ -5,7 +5,7 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-05-12 12:30
+ * Last updated: 2026-05-12 17:50
  */
 
 const totalYouTubeViews = 432599862;
@@ -46,6 +46,17 @@ const projects = [
         previewVideo: "videos/previews/DODyPfskkr6.mp4"
     },
     {
+        title: "Can LCS pros name Brasil teams?",
+        category: "short-form",
+        videoId: "Z4YkUiEVufg",
+        platform: "youtube",
+        channelName: "Team Liquid League of Legends",
+        viewCount: "1K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=Z4YkUiEVufg",
+        previewVideo: ""
+    },
+    {
         title: "WILL HE EVER SMILE?????????? #chess #chessplayer #magnus #magnuscarlsen",
         category: "short-form",
         videoId: "DMqBVM4NTsc",
@@ -55,6 +66,17 @@ const projects = [
         thumbnail: "images/thumbnails/DMqBVM4NTsc.jpg",
         url: "https://www.instagram.com/p/DMqBVM4NTsc/",
         previewVideo: "videos/previews/DMqBVM4NTsc.mp4"
+    },
+    {
+        title: "LEON E NILCE = GÊNIOS #desafio",
+        category: "short-form",
+        videoId: "RXdWLha8dcM",
+        platform: "youtube",
+        channelName: "República Coisa de Nerd",
+        viewCount: "1.2M views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=RXdWLha8dcM",
+        previewVideo: "videos/previews/RXdWLha8dcM.mp4"
     },
     {
         title: "Se o @frtttfps fosse um peixe, qual ele seria? 🐟 #Viagem #Japão #FRTTT #Valorant #TeamLiquid",
@@ -90,6 +112,17 @@ const projects = [
         previewVideo: "videos/previews/gC4SC8j58pI.mp4"
     },
     {
+        title: "INTANKAVEL O FINAL KKKKKKKKKKKK",
+        category: "short-form",
+        videoId: "DDprhgUyhfZ",
+        platform: "instagram",
+        channelName: "Team Liquid BR 🇧🇷",
+        viewCount: "1K likes",
+        thumbnail: "images/thumbnails/DDprhgUyhfZ.jpg",
+        url: "https://www.instagram.com/p/DDprhgUyhfZ/",
+        previewVideo: ""
+    },
+    {
         title: "Renderizar em segundos um projeto que levaria horas no seu PC? 👀 Vem pra Noar e dê um upgrade nos seus projetos! 🤘🏻😎 #Noarcloud #Cloudpc #Render #Design #Photoshop #Premiere #Ilustrator",
         category: "short-form",
         videoId: "C1_1fTOOtRS",
@@ -112,17 +145,6 @@ const projects = [
         previewVideo: "videos/previews/C-6GOVvv96_.mp4"
     },
     {
-        title: "HOW OUR GOLDFISH (almost) PERFECTLY PREDICTED #TI13 🐟 #dota2 #dotamemes #dota2memes #teamliquid",
-        category: "short-form",
-        videoId: "DADw-ecNJwx",
-        platform: "instagram",
-        channelName: "Team Liquid",
-        viewCount: "622 likes",
-        thumbnail: "images/thumbnails/DADw-ecNJwx.jpg",
-        url: "https://www.instagram.com/p/DADw-ecNJwx/",
-        previewVideo: "videos/previews/DADw-ecNJwx.mp4"
-    },
-    {
         title: "Guess the Secret CS2 Player (actual pro)",
         category: "long-form",
         videoId: "KZYFvgajyPE",
@@ -132,83 +154,6 @@ const projects = [
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=KZYFvgajyPE",
         previewVideo: "videos/previews/KZYFvgajyPE.mp4"
-    },
-    {
-        title: "IMPROVÁVEL NÃO É IMPOSSÍVEL.",
-        category: "long-form",
-        videoId: "2aGmg_RHZFE",
-        platform: "youtube",
-        channelName: "República Coisa de Nerd",
-        viewCount: "493K views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=2aGmg_RHZFE",
-        previewVideo: "videos/previews/2aGmg_RHZFE.mp4"
-    },
-    {
-        title: "LOUD CAMPEÃ DO VALORANT E LOL!!! - Thaigão News",
-        category: "long-form",
-        videoId: "gVQEYRTtm68",
-        platform: "youtube",
-        channelName: "Thaiga",
-        viewCount: "13K views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=gVQEYRTtm68",
-        previewVideo: "videos/previews/gVQEYRTtm68.mp4"
-    },
-    {
-        title: "A VOLTA DO QUEM SABE MENOS!!!",
-        category: "long-form",
-        videoId: "5iOsiDWWs04",
-        platform: "youtube",
-        channelName: "República Coisa de Nerd",
-        viewCount: "560K views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=5iOsiDWWs04",
-        previewVideo: "videos/previews/5iOsiDWWs04.mp4"
-    },
-    {
-        title: "FRTTT vs 5 NOOBS! - Desafio IMPOSSÍVEL no Valorant",
-        category: "long-form",
-        videoId: "mnO5bES3eQY",
-        platform: "youtube",
-        channelName: "Team Liquid Visa: Valorant BR",
-        viewCount: "361K views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=mnO5bES3eQY",
-        previewVideo: "videos/previews/mnO5bES3eQY.mp4"
-    },
-    {
-        title: "NÃO É SEMPRE QUE SE GANHA...",
-        category: "long-form",
-        videoId: "WOGQI0PAjEU",
-        platform: "youtube",
-        channelName: "República Coisa de Nerd",
-        viewCount: "261K views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=WOGQI0PAjEU",
-        previewVideo: "videos/previews/WOGQI0PAjEU.mp4"
-    },
-    {
-        title: "MÃES DE PROS JOGAM VALORANT PELA 1ª VEZ!",
-        category: "long-form",
-        videoId: "JgEullP4AVo",
-        platform: "youtube",
-        channelName: "Team Liquid Visa: Valorant BR",
-        viewCount: "83K views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=JgEullP4AVo",
-        previewVideo: "videos/previews/JgEullP4AVo.mp4"
-    },
-    {
-        title: "A FINAL MAIS EMOCIONANTE DA HISTÓRIA DO VALORANT!!! - Game Changers Brasil Etapa 3",
-        category: "long-form",
-        videoId: "vP1rwg-rzcI",
-        platform: "youtube",
-        channelName: "Team Liquid Visa: Valorant BR",
-        viewCount: "5K views",
-        thumbnail: "",
-        url: "https://www.youtube.com/watch?v=vP1rwg-rzcI",
-        previewVideo: "videos/previews/vP1rwg-rzcI.mp4"
     },
     {
         title: "INVESTIGAÇÃO! CULPADA POR SER A MAIOR SÉRIE DE TRUE CRIME? | #EmmyTNT",
@@ -222,6 +167,83 @@ const projects = [
         previewVideo: "videos/previews/_lZYR2VkZTg.mp4"
     },
     {
+        title: "NÃO É SEMPRE QUE SE GANHA...",
+        category: "long-form",
+        videoId: "WOGQI0PAjEU",
+        platform: "youtube",
+        channelName: "República Coisa de Nerd",
+        viewCount: "261K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=WOGQI0PAjEU",
+        previewVideo: "videos/previews/WOGQI0PAjEU.mp4"
+    },
+    {
+        title: "FRTTT vs 5 NOOBS! - Desafio IMPOSSÍVEL no Valorant",
+        category: "long-form",
+        videoId: "mnO5bES3eQY",
+        platform: "youtube",
+        channelName: "Team Liquid Visa: Valorant BR",
+        viewCount: "361K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=mnO5bES3eQY",
+        previewVideo: "videos/previews/mnO5bES3eQY.mp4"
+    },
+    {
+        title: "OS CASAIS DO TOPO DAS PARADAS! 🎙️ BILLBOARD MUSIC AWARDS®️ 2022 | #BillboardTNT",
+        category: "long-form",
+        videoId: "WZLSVMVS5o4",
+        platform: "youtube",
+        channelName: "TNT Brasil",
+        viewCount: "3K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=WZLSVMVS5o4",
+        previewVideo: ""
+    },
+    {
+        title: "MÃES DE PROS JOGAM VALORANT PELA 1ª VEZ!",
+        category: "long-form",
+        videoId: "JgEullP4AVo",
+        platform: "youtube",
+        channelName: "Team Liquid Visa: Valorant BR",
+        viewCount: "83K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=JgEullP4AVo",
+        previewVideo: "videos/previews/JgEullP4AVo.mp4"
+    },
+    {
+        title: "LOUD CAMPEÃ DO VALORANT E LOL!!! - Thaigão News",
+        category: "long-form",
+        videoId: "gVQEYRTtm68",
+        platform: "youtube",
+        channelName: "Thaiga",
+        viewCount: "13K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=gVQEYRTtm68",
+        previewVideo: "videos/previews/gVQEYRTtm68.mp4"
+    },
+    {
+        title: "QUEM É O FERRO? - Desafio de Valorant",
+        category: "long-form",
+        videoId: "EcOX5FeP2w4",
+        platform: "youtube",
+        channelName: "Team Liquid Visa: Valorant BR",
+        viewCount: "247K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=EcOX5FeP2w4",
+        previewVideo: ""
+    },
+    {
+        title: "A FINAL MAIS EMOCIONANTE DA HISTÓRIA DO VALORANT!!! - Game Changers Brasil Etapa 3",
+        category: "long-form",
+        videoId: "vP1rwg-rzcI",
+        platform: "youtube",
+        channelName: "Team Liquid Visa: Valorant BR",
+        viewCount: "5K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=vP1rwg-rzcI",
+        previewVideo: "videos/previews/vP1rwg-rzcI.mp4"
+    },
+    {
         title: "Adeus Windows! Bem-vindo Linux!",
         category: "long-form",
         videoId: "TZfM1yfkFn4",
@@ -232,48 +254,33 @@ const projects = [
         url: "https://www.youtube.com/watch?v=TZfM1yfkFn4",
         previewVideo: "videos/previews/TZfM1yfkFn4.mp4"
     },
+    {
+        title: "Visitei uma PLANTAÇÃO de MAC0NHA na ARGENTINA! umdois Viagem",
+        category: "long-form",
+        videoId: "C1ivkljLWAw",
+        platform: "youtube",
+        channelName: "umdois",
+        viewCount: "217K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=C1ivkljLWAw",
+        previewVideo: ""
+    },
+    {
+        title: "Invadimos o camarim do HAIKAISS na Intercannabis",
+        category: "long-form",
+        videoId: "0VTN4lkjHqM",
+        platform: "youtube",
+        channelName: "umdois",
+        viewCount: "50K views",
+        thumbnail: "",
+        url: "https://www.youtube.com/watch?v=0VTN4lkjHqM",
+        previewVideo: "videos/previews/0VTN4lkjHqM.mp4"
+    },
 ];
 
 // Curated hero groups: one big long-form video + companion shorts each.
 // Resolved from data/site-config.json at sync time.
 const featured = [
-  {
-    "longForm": {
-      "title": "Beat Me, Get $1000",
-      "category": "long-form",
-      "videoId": "DW3F1OHfZeo",
-      "platform": "youtube",
-      "channelName": "Team Liquid League of Legends",
-      "viewCount": "435K views",
-      "thumbnail": "",
-      "url": "https://www.youtube.com/watch?v=DW3F1OHfZeo",
-      "previewVideo": "videos/previews/DW3F1OHfZeo.mp4"
-    },
-    "shortForm": [
-      {
-        "title": "Beat me, win $500 #leagueoflegends",
-        "category": "short-form",
-        "videoId": "1m9rl_lxits",
-        "platform": "youtube",
-        "channelName": "Team Liquid League of Legends",
-        "viewCount": "36K views",
-        "thumbnail": "",
-        "url": "https://www.youtube.com/shorts/1m9rl_lxits",
-        "previewVideo": "videos/previews/1m9rl_lxits.mp4"
-      },
-      {
-        "title": "I lost $1000 playing League",
-        "category": "short-form",
-        "videoId": "scK-D1Eg7PY",
-        "platform": "youtube",
-        "channelName": "Team Liquid League of Legends",
-        "viewCount": "1.0M views",
-        "thumbnail": "",
-        "url": "https://www.youtube.com/shorts/scK-D1Eg7PY?feature=share",
-        "previewVideo": "videos/previews/scK-D1Eg7PY.mp4"
-      }
-    ]
-  },
   {
     "longForm": {
       "title": "5 CS Pros. 7 Maps. Only One Survives!",
@@ -308,6 +315,43 @@ const featured = [
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/UkEXXO-o8b8",
         "previewVideo": "videos/previews/UkEXXO-o8b8.mp4"
+      }
+    ]
+  },
+  {
+    "longForm": {
+      "title": "Beat Me, Get $1000",
+      "category": "long-form",
+      "videoId": "DW3F1OHfZeo",
+      "platform": "youtube",
+      "channelName": "Team Liquid League of Legends",
+      "viewCount": "435K views",
+      "thumbnail": "",
+      "url": "https://www.youtube.com/watch?v=DW3F1OHfZeo",
+      "previewVideo": "videos/previews/DW3F1OHfZeo.mp4"
+    },
+    "shortForm": [
+      {
+        "title": "Beat me, win $500 #leagueoflegends",
+        "category": "short-form",
+        "videoId": "1m9rl_lxits",
+        "platform": "youtube",
+        "channelName": "Team Liquid League of Legends",
+        "viewCount": "36K views",
+        "thumbnail": "",
+        "url": "https://www.youtube.com/shorts/1m9rl_lxits",
+        "previewVideo": "videos/previews/1m9rl_lxits.mp4"
+      },
+      {
+        "title": "I lost $1000 playing League",
+        "category": "short-form",
+        "videoId": "scK-D1Eg7PY",
+        "platform": "youtube",
+        "channelName": "Team Liquid League of Legends",
+        "viewCount": "1.0M views",
+        "thumbnail": "",
+        "url": "https://www.youtube.com/shorts/scK-D1Eg7PY?feature=share",
+        "previewVideo": "videos/previews/scK-D1Eg7PY.mp4"
       }
     ]
   }
