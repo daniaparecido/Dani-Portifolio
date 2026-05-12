@@ -5,7 +5,7 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-05-12 17:50
+ * Last updated: 2026-05-12 17:55
  */
 
 const totalYouTubeViews = 432599862;
@@ -54,7 +54,7 @@ const projects = [
         viewCount: "1K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=Z4YkUiEVufg",
-        previewVideo: ""
+        previewVideo: "videos/previews/Z4YkUiEVufg.mp4"
     },
     {
         title: "WILL HE EVER SMILE?????????? #chess #chessplayer #magnus #magnuscarlsen",
@@ -197,7 +197,7 @@ const projects = [
         viewCount: "3K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=WZLSVMVS5o4",
-        previewVideo: ""
+        previewVideo: "videos/previews/WZLSVMVS5o4.mp4"
     },
     {
         title: "MÃES DE PROS JOGAM VALORANT PELA 1ª VEZ!",
@@ -230,7 +230,7 @@ const projects = [
         viewCount: "247K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=EcOX5FeP2w4",
-        previewVideo: ""
+        previewVideo: "videos/previews/EcOX5FeP2w4.mp4"
     },
     {
         title: "A FINAL MAIS EMOCIONANTE DA HISTÓRIA DO VALORANT!!! - Game Changers Brasil Etapa 3",
@@ -263,7 +263,7 @@ const projects = [
         viewCount: "217K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=C1ivkljLWAw",
-        previewVideo: ""
+        previewVideo: "videos/previews/C1ivkljLWAw.mp4"
     },
     {
         title: "Invadimos o camarim do HAIKAISS na Intercannabis",
