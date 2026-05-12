@@ -5,10 +5,10 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-05-12 17:55
+ * Last updated: 2026-05-12 18:02
  */
 
-const totalYouTubeViews = 432599862;
+const totalYouTubeViews = 432609862;
 const totalYouTubeVideos = 572;
 
 const projects = [
@@ -311,7 +311,7 @@ const featured = [
         "videoId": "UkEXXO-o8b8",
         "platform": "youtube",
         "channelName": "Team Liquid CS2 | Counter Strike",
-        "viewCount": "3K views",
+        "viewCount": "4K views",
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/UkEXXO-o8b8",
         "previewVideo": "videos/previews/UkEXXO-o8b8.mp4"
