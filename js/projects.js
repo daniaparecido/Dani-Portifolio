@@ -5,7 +5,7 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-05-13 16:42
+ * Last updated: 2026-05-13 17:16
  */
 
 const totalYouTubeViews = 432635866;
@@ -309,7 +309,7 @@ const featured = [
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/AT9g-2yrS5s",
         "previewVideo": "videos/previews/AT9g-2yrS5s.mp4",
-        "localSource": false
+        "localSource": true
       },
       {
         "title": "\"Maybe Shoot Back, Kamil\" was diabolical.  #duelbits #cs2 #csgo #counterstrike #cs2overpass #gaming",
@@ -321,7 +321,7 @@ const featured = [
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/UkEXXO-o8b8",
         "previewVideo": "videos/previews/UkEXXO-o8b8.mp4",
-        "localSource": false
+        "localSource": true
       }
     ]
   },
@@ -349,7 +349,7 @@ const featured = [
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/1m9rl_lxits",
         "previewVideo": "videos/previews/1m9rl_lxits.mp4",
-        "localSource": false
+        "localSource": true
       },
       {
         "title": "I lost $1000 playing League",
@@ -361,7 +361,7 @@ const featured = [
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/scK-D1Eg7PY?feature=share",
         "previewVideo": "videos/previews/scK-D1Eg7PY.mp4",
-        "localSource": false
+        "localSource": true
       }
     ]
   }
