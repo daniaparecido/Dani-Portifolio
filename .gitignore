@@ -1,4 +1,6 @@
-# Source videos - only keep short-form (Instagram/TikTok), ignore long-form (YouTube)
+# Source videos - keep short-form sources (IG / TikTok / YouTube Shorts) since the
+# lightbox plays them as local mp4s; ignore long-form YouTube sources (big files,
+# only used locally to seed hover previews -- the live site uses the YT embed).
 videos/source/DW3F1OHfZeo.mp4
 videos/source/gVQEYRTtm68.mp4
 videos/source/KZYFvgajyPE.mp4
@@ -16,7 +18,6 @@ videos/source/M7RsTKpk9sE.mp4
 videos/source/vP1rwg-rzcI.mp4
 videos/source/0VTN4lkjHqM.mp4
 videos/source/XLPy6sLi_jk.mp4
-videos/source/gC4SC8j58pI.mp4
 videos/source/*.part
 
 # Cookies files (sensitive)

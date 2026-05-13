@@ -5,11 +5,12 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-05-13 08:27
+ * Last updated: 2026-05-13 16:42
  */
 
 const totalYouTubeViews = 432635866;
 const totalYouTubeVideos = 572;
+const totalVideos = 715;
 
 const projects = [
     {
@@ -54,7 +55,8 @@ const projects = [
         viewCount: "1K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=Z4YkUiEVufg",
-        previewVideo: "videos/previews/Z4YkUiEVufg.mp4"
+        previewVideo: "videos/previews/Z4YkUiEVufg.mp4",
+        localSource: true
     },
     {
         title: "WILL HE EVER SMILE?????????? #chess #chessplayer #magnus #magnuscarlsen",
@@ -76,7 +78,8 @@ const projects = [
         viewCount: "1.2M views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=RXdWLha8dcM",
-        previewVideo: "videos/previews/RXdWLha8dcM.mp4"
+        previewVideo: "videos/previews/RXdWLha8dcM.mp4",
+        localSource: true
     },
     {
         title: "Se o @frtttfps fosse um peixe, qual ele seria? 🐟 #Viagem #Japão #FRTTT #Valorant #TeamLiquid",
@@ -109,7 +112,8 @@ const projects = [
         viewCount: "5.1M views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=gC4SC8j58pI",
-        previewVideo: "videos/previews/gC4SC8j58pI.mp4"
+        previewVideo: "videos/previews/gC4SC8j58pI.mp4",
+        localSource: true
     },
     {
         title: "INTANKAVEL O FINAL KKKKKKKKKKKK",
@@ -291,7 +295,8 @@ const featured = [
       "viewCount": "2K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=DaEP-ij-1KA",
-      "previewVideo": "videos/previews/DaEP-ij-1KA.mp4"
+      "previewVideo": "videos/previews/DaEP-ij-1KA.mp4",
+      "localSource": false
     },
     "shortForm": [
       {
@@ -303,7 +308,8 @@ const featured = [
         "viewCount": "5K views",
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/AT9g-2yrS5s",
-        "previewVideo": "videos/previews/AT9g-2yrS5s.mp4"
+        "previewVideo": "videos/previews/AT9g-2yrS5s.mp4",
+        "localSource": false
       },
       {
         "title": "\"Maybe Shoot Back, Kamil\" was diabolical.  #duelbits #cs2 #csgo #counterstrike #cs2overpass #gaming",
@@ -314,7 +320,8 @@ const featured = [
         "viewCount": "6K views",
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/UkEXXO-o8b8",
-        "previewVideo": "videos/previews/UkEXXO-o8b8.mp4"
+        "previewVideo": "videos/previews/UkEXXO-o8b8.mp4",
+        "localSource": false
       }
     ]
   },
@@ -328,7 +335,8 @@ const featured = [
       "viewCount": "436K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=DW3F1OHfZeo",
-      "previewVideo": "videos/previews/DW3F1OHfZeo.mp4"
+      "previewVideo": "videos/previews/DW3F1OHfZeo.mp4",
+      "localSource": false
     },
     "shortForm": [
       {
@@ -340,7 +348,8 @@ const featured = [
         "viewCount": "36K views",
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/1m9rl_lxits",
-        "previewVideo": "videos/previews/1m9rl_lxits.mp4"
+        "previewVideo": "videos/previews/1m9rl_lxits.mp4",
+        "localSource": false
       },
       {
         "title": "I lost $1000 playing League",
@@ -351,7 +360,8 @@ const featured = [
         "viewCount": "1.0M views",
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/scK-D1Eg7PY?feature=share",
-        "previewVideo": "videos/previews/scK-D1Eg7PY.mp4"
+        "previewVideo": "videos/previews/scK-D1Eg7PY.mp4",
+        "localSource": false
       }
     ]
   }

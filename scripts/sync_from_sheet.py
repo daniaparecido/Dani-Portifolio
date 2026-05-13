@@ -51,6 +51,7 @@ SITE_CONFIG_FILE = DATA_DIR / "site-config.json"
 PROJECTS_FILE = ROOT_DIR / "js" / "projects.js"
 THUMBS_DIR = ROOT_DIR / "images" / "thumbnails"
 PREVIEWS_DIR = ROOT_DIR / "videos" / "previews"
+SOURCE_DIR = ROOT_DIR / "videos" / "source"
 
 YOUTUBE_LIBRARY_ID = "157LkGyuY_jMWwTWKu2w4Sh9lw0qHCURXKUufFfgOgqg"
 IGTT_LIBRARY_ID = "1jVd2XMhOI1MVqV9YtaBMVtXWU7IzkdZNuLYdkI5ZKdQ"
@@ -298,6 +299,15 @@ def project_obj(category, item):
     thumbnail = "" if platform == "youtube" else (item.get("thumbnail") or "")
     preview_rel = f"videos/previews/{item['id']}.mp4"
     has_preview = (PREVIEWS_DIR / f"{item['id']}.mp4").exists()
+    # YouTube short-form gets the IG/TikTok lightbox treatment when a local mp4
+    # exists: the embed pillarboxes a 9:16 short inside a 16:9 box and shows YT
+    # chrome, so we'd rather play the local source. Long-form YouTube keeps the
+    # embed (16:9 is the right shape for that container).
+    local_source = (
+        platform == "youtube"
+        and category == "short-form"
+        and (SOURCE_DIR / f"{item['id']}.mp4").exists()
+    )
     return {
         "title": item.get("title", ""),
         "category": category,
@@ -308,6 +318,7 @@ def project_obj(category, item):
         "thumbnail": thumbnail,
         "url": item.get("url", ""),
         "previewVideo": preview_rel if has_preview else "",
+        "localSource": local_source,
     }
 
 
@@ -377,12 +388,16 @@ def generate_projects_js(library, site_config, totals):
         "",
         f"const totalYouTubeViews = {totals['views']};",
         f"const totalYouTubeVideos = {totals['videos']};",
+        # Count across every source sheet (YouTube long-form + Shorts, Instagram,
+        # TikTok). The hero "published videos" stat uses this; cross-posts of the
+        # same edit count once per platform on purpose.
+        f"const totalVideos = {len(library)};",
         "",
         "const projects = [",
     ]
     for category, item in ordered:
         obj = project_obj(category, item)
-        lines += [
+        entry = [
             "    {",
             f'        title: "{escape_js(obj["title"])}",',
             f'        category: "{obj["category"]}",',
@@ -393,8 +408,12 @@ def generate_projects_js(library, site_config, totals):
             f'        thumbnail: "{obj["thumbnail"]}",',
             f'        url: "{obj["url"]}",',
             f'        previewVideo: "{obj["previewVideo"]}"',
-            "    },",
         ]
+        if obj.get("localSource"):
+            entry[-1] += ","
+            entry.append('        localSource: true')
+        entry.append("    },")
+        lines += entry
     lines += ["];", ""]
     lines += [
         "// Curated hero groups: one big long-form video + companion shorts each.",

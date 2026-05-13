@@ -292,10 +292,17 @@
             </div>
         `;
 
-        // Click handler - Open appropriate lightbox based on platform
+        // Click handler - Open appropriate lightbox based on platform.
+        // A YouTube short with a local mp4 (project.localSource) goes through the
+        // local-video lightbox so the 9:16 video fills a tall vertical container
+        // instead of getting pillarboxed inside YouTube's 16:9 embed chrome.
         item.addEventListener('click', () => {
             if (platform === 'youtube') {
-                openYouTubeLightbox(videoId, project.url);
+                if (project.localSource && project.category === 'short-form') {
+                    openVideoLightbox(videoId, 'youtube', project.url);
+                } else {
+                    openYouTubeLightbox(videoId, project.url);
+                }
             } else if (platform === 'instagram') {
                 openVideoLightbox(videoId, 'instagram', project.url);
             } else if (platform === 'tiktok') {
@@ -510,7 +517,10 @@
         videoContainer.classList.add('vertical-video');
 
         const videoPath = `videos/source/${videoId}.mp4`;
-        const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+        // Capitalise 'instagram' / 'tiktok' / 'youtube'; YouTube needs the
+        // mid-word capital that a naive uppercase-first wouldn't produce.
+        const platformLabels = { youtube: 'YouTube', instagram: 'Instagram', tiktok: 'TikTok' };
+        const platformName = platformLabels[platform] || (platform.charAt(0).toUpperCase() + platform.slice(1));
 
         videoContainer.innerHTML = `
             <div class="vertical-video-wrapper">
