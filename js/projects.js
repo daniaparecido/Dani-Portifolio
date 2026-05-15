@@ -5,12 +5,12 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-05-15 08:15
+ * Last updated: 2026-05-15 17:53
  */
 
-const totalYouTubeViews = 432697872;
-const totalYouTubeVideos = 572;
-const totalVideos = 715;
+const totalYouTubeViews = 432697998;
+const totalYouTubeVideos = 573;
+const totalVideos = 716;
 
 const projects = [
     {
@@ -322,6 +322,18 @@ const featured = [
         "url": "https://www.youtube.com/shorts/UkEXXO-o8b8",
         "previewVideo": "videos/previews/UkEXXO-o8b8.mp4",
         "localSource": true
+      },
+      {
+        "title": "Ultimate is trolling atp.  #duelbits #cs2 #liquidcsgo #counterstrike2 #cs2clips",
+        "category": "short-form",
+        "videoId": "i9px6iapZd4",
+        "platform": "youtube",
+        "channelName": "Team Liquid CS2 | Counter Strike",
+        "viewCount": "126 views",
+        "thumbnail": "",
+        "url": "https://youtube.com/shorts/i9px6iapZd4?si=mxl76sdsSHJDBXZ-",
+        "previewVideo": "",
+        "localSource": false
       }
     ]
   },
