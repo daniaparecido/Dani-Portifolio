@@ -5,10 +5,10 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-05-14 08:10
+ * Last updated: 2026-05-15 08:15
  */
 
-const totalYouTubeViews = 432662872;
+const totalYouTubeViews = 432697872;
 const totalYouTubeVideos = 572;
 const totalVideos = 715;
 
@@ -231,7 +231,7 @@ const projects = [
         videoId: "EcOX5FeP2w4",
         platform: "youtube",
         channelName: "Team Liquid Visa: Valorant BR",
-        viewCount: "247K views",
+        viewCount: "248K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=EcOX5FeP2w4",
         previewVideo: "videos/previews/EcOX5FeP2w4.mp4"
@@ -305,7 +305,7 @@ const featured = [
         "videoId": "AT9g-2yrS5s",
         "platform": "youtube",
         "channelName": "Team Liquid CS2 | Counter Strike",
-        "viewCount": "5K views",
+        "viewCount": "6K views",
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/AT9g-2yrS5s",
         "previewVideo": "videos/previews/AT9g-2yrS5s.mp4",
@@ -317,7 +317,7 @@ const featured = [
         "videoId": "UkEXXO-o8b8",
         "platform": "youtube",
         "channelName": "Team Liquid CS2 | Counter Strike",
-        "viewCount": "9K views",
+        "viewCount": "10K views",
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/UkEXXO-o8b8",
         "previewVideo": "videos/previews/UkEXXO-o8b8.mp4",
@@ -332,7 +332,7 @@ const featured = [
       "videoId": "DW3F1OHfZeo",
       "platform": "youtube",
       "channelName": "Team Liquid League of Legends",
-      "viewCount": "437K views",
+      "viewCount": "439K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=DW3F1OHfZeo",
       "previewVideo": "videos/previews/DW3F1OHfZeo.mp4",
