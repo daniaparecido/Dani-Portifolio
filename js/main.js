@@ -430,11 +430,26 @@
                 label.textContent = 'Related shorts';
                 shortsEl.appendChild(label);
 
+                const viewport = document.createElement('div');
+                viewport.className = 'featured-shorts-viewport';
+
                 const row = document.createElement('div');
                 row.className = 'featured-shorts-row';
-                shorts.forEach(s => row.appendChild(createGridItem(s)));
-                shortsEl.appendChild(row);
+                // noIframePreview: same reason as the featured-main hero tile —
+                // YouTube's iframe preview shows player chrome (Powered by X
+                // overlay, prev/pause/next, YouTube logo) which looks terrible
+                // on a curated showcase tile. Local clip if available, else
+                // just the static thumbnail on hover.
+                shorts.forEach(s => row.appendChild(createGridItem(s, { noIframePreview: true })));
+                viewport.appendChild(row);
 
+                // Nav arrows are mounted lazily: once we've measured that the row
+                // actually overflows (more shorts than fit in view), we attach
+                // prev/next buttons and a scroll listener. ≤3 shorts -> nothing
+                // mounted -> behavior identical to the pre-scroller version.
+                setupShortsNav(viewport, row);
+
+                shortsEl.appendChild(viewport);
                 groupEl.appendChild(shortsEl);
             }
 
@@ -442,6 +457,106 @@
         });
 
         section.hidden = false;
+    }
+
+    /**
+     * Attach prev/next nav buttons to a featured-shorts viewport when the row
+     * overflows. No-op on touch devices (mobile uses native swipe via the CSS
+     * overflow-x: auto path) and when the row fits without scrolling.
+     */
+    function setupShortsNav(viewport, row) {
+        const ARROW_LEFT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+        const ARROW_RIGHT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+
+        const prev = document.createElement('button');
+        prev.type = 'button';
+        prev.className = 'featured-shorts-nav prev';
+        prev.setAttribute('aria-label', 'Previous shorts');
+        prev.innerHTML = ARROW_LEFT;
+
+        const next = document.createElement('button');
+        next.type = 'button';
+        next.className = 'featured-shorts-nav next';
+        next.setAttribute('aria-label', 'Next shorts');
+        next.innerHTML = ARROW_RIGHT;
+
+        // EDGE_THRESHOLD absorbs sub-pixel rounding from scroll-snap; tiles are
+        // ~190px so 8px is well below "one tile away" but big enough to catch
+        // 1-2px snap noise reliably.
+        const EDGE_THRESHOLD = 8;
+
+        const updateState = () => {
+            const overflow = row.scrollWidth - row.clientWidth;
+            if (overflow <= 1) {
+                prev.hidden = true;
+                next.hidden = true;
+                return;
+            }
+            prev.hidden = false;
+            next.hidden = false;
+            prev.disabled = row.scrollLeft <= EDGE_THRESHOLD;
+            next.disabled = row.scrollLeft >= overflow - EDGE_THRESHOLD;
+        };
+
+        const step = () => {
+            // Scroll by one tile-width plus the gap so a click advances exactly
+            // one card and snap settles on a tile boundary.
+            const tile = row.querySelector('.grid-item');
+            if (!tile) return row.clientWidth;
+            const styles = getComputedStyle(row);
+            const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+            return tile.getBoundingClientRect().width + gap;
+        };
+
+        // scroll events from smooth-scrollBy are coalesced and may not fire on
+        // the final paint, so re-check after the scroll has settled. 350ms is
+        // longer than the browser's smooth-scroll duration but short enough that
+        // the disabled state appears responsive after a click.
+        const scheduleSettleCheck = () => {
+            requestAnimationFrame(updateState);
+            setTimeout(updateState, 350);
+        };
+
+        prev.addEventListener('click', () => {
+            row.scrollBy({ left: -step(), behavior: 'smooth' });
+            scheduleSettleCheck();
+        });
+        next.addEventListener('click', () => {
+            row.scrollBy({ left: step(), behavior: 'smooth' });
+            scheduleSettleCheck();
+        });
+
+        row.addEventListener('scroll', updateState, { passive: true });
+        // scrollend fires once a scroll (programmatic or user) fully settles —
+        // not yet universal but a no-op where unsupported (we still poll above).
+        row.addEventListener('scrollend', updateState, { passive: true });
+        window.addEventListener('resize', updateState);
+        if (typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(updateState).observe(row);
+        }
+
+        viewport.appendChild(prev);
+        viewport.appendChild(next);
+
+        // Initial measurement is retried at multiple ticks because rAF alone
+        // sometimes fires before the row's flex children have computed widths
+        // (observed: hidden state stuck at default false even with overflow=0
+        // until a resize event re-triggered updateState). The cheap retries
+        // catch whatever post-layout tick the row actually settles on.
+        const initSettle = () => {
+            updateState();
+            requestAnimationFrame(updateState);
+            setTimeout(updateState, 100);
+            setTimeout(updateState, 500);
+        };
+        initSettle();
+        // Re-run once each thumbnail image decodes; flex-basis is fixed but the
+        // first reliable layout often coincides with the first image load.
+        row.querySelectorAll('img').forEach(img => {
+            if (img.complete) return;
+            img.addEventListener('load', updateState, { once: true });
+            img.addEventListener('error', updateState, { once: true });
+        });
     }
 
     // ============================================

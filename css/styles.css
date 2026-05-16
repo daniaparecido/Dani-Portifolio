@@ -649,12 +649,11 @@ button {
 
 .featured-group {
     display: flex;
-    align-items: flex-start;
     gap: 20px;
 }
 
 .featured-main {
-    flex: 6 1 0;
+    flex: 4.8 1 0;
     min-width: 0;
 }
 
@@ -704,7 +703,7 @@ button {
 }
 
 .featured-shorts {
-    flex: 4 1 0;
+    flex: 5.2 1 0;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -721,22 +720,111 @@ button {
     color: #666666;
 }
 
+/* Width-driven row: each tile is exactly 1/3 of the row width (minus 2 gaps),
+   so 3 tiles fit flush with zero overflow and the nav arrows stay hidden. A
+   4th+ tile pushes the row past the viewport and the arrows kick in (mounted
+   by main.js when scrollWidth > clientWidth). Tile height comes from the thumb
+   aspect ratio plus title/meta below, like any normal grid card. */
+.featured-shorts-viewport {
+    position: relative;
+    overflow: hidden;
+}
+
 .featured-shorts-row {
+    --shorts-gap: 8px;
     display: flex;
-    gap: 8px;
+    gap: var(--shorts-gap);
+    overflow-x: auto;
+    /* Explicit overflow-y: hidden is required. Without it, setting overflow-x
+       to a scrolling value causes the browser to compute overflow-y as auto
+       (per spec), which makes the row vertically scrollable by the few px of
+       padding bleed below — a confusing UX bug Daniel caught immediately. */
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    /* Bleed slightly so the hover-zoom (1.04) on edge tiles isn't clipped. */
+    padding: 4px 2px;
+    margin: -4px -2px;
+}
+
+.featured-shorts-row::-webkit-scrollbar {
+    display: none;
 }
 
 .featured-shorts-row .grid-item {
-    flex: 1 1 0;
+    flex: 0 0 calc((100% - var(--shorts-gap) * 2) / 3);
     min-width: 0;
+    scroll-snap-align: start;
 }
 
-.featured-shorts .grid-item:hover {
+/* Match the featured-main hover behavior: don't scale the whole tile (that
+   zooms the title and view-count text below the thumb, which looks bad).
+   Only zoom the thumbnail image inside its fixed-aspect container. */
+.featured-shorts .grid-item:hover,
+.featured-shorts .grid-item.preview-active {
+    transform: none;
+}
+
+.featured-shorts .grid-item:hover .grid-item-thumb img {
     transform: scale(1.04);
 }
 
 .featured-shorts .grid-item-thumb {
     aspect-ratio: 9 / 16;
+}
+
+/* Nav arrows: plain white chevrons with a drop-shadow for legibility against
+   any thumbnail color. Always visible (no hover gating) and on top of tile
+   hover scale (z-index above the grid-item hover z-index of 10). Mounted by
+   main.js only when the row actually overflows. */
+.featured-shorts-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 6px;
+    color: #ffffff;
+    cursor: pointer;
+    z-index: 20;
+    opacity: 1;
+    pointer-events: auto;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9))
+            drop-shadow(0 0 2px rgba(0, 0, 0, 0.7));
+    transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.featured-shorts-nav:hover {
+    transform: translateY(-50%) scale(1.18);
+}
+
+.featured-shorts-nav:disabled {
+    opacity: 0 !important;
+    pointer-events: none;
+    cursor: default;
+}
+
+/* JS sets [hidden] on both nav buttons when the row doesn't overflow (≤2 short
+   tiles in this column). Without this rule the custom `display: flex` on
+   .featured-shorts-nav overrides the UA default `[hidden] { display: none }`,
+   so arrows would stay visible on non-overflowing groups (e.g. 2-short groups
+   like "Beat Me, Get $1000"). */
+.featured-shorts-nav[hidden] {
+    display: none;
+}
+
+.featured-shorts-nav.prev { left: 6px; }
+.featured-shorts-nav.next { right: 6px; }
+
+.featured-shorts-nav svg {
+    width: 40px;
+    height: 40px;
+    display: block;
+    stroke-width: 2.75;
 }
 
 /* Visible divider between stacked featured groups so each project reads as a
@@ -1230,8 +1318,27 @@ button {
         gap: 6px;
     }
 
+    /* Mobile: stacked layout (no height to match against), so revert to a
+       width-driven row that shows ~2.5 tiles at a time using native swipe. */
+    .featured-shorts-viewport {
+        flex: 0 0 auto;
+        overflow: visible;
+    }
+
     .featured-shorts-row {
-        gap: 6px;
+        --shorts-gap: 6px;
+        --shorts-visible: 2.5;
+        height: auto;
+    }
+
+    .featured-shorts-row .grid-item {
+        flex: 0 0 calc((100% - var(--shorts-gap) * 1.5) / var(--shorts-visible));
+        height: auto;
+        width: auto;
+    }
+
+    .featured-shorts-nav {
+        display: none;
     }
 
     .featured-eyebrow {
