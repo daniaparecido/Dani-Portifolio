@@ -5,10 +5,10 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-06-05 07:22
+ * Last updated: 2026-06-06 06:41
  */
 
-const totalYouTubeViews = 433325889;
+const totalYouTubeViews = 433451889;
 const totalYouTubeVideos = 577;
 const totalVideos = 721;
 
@@ -109,7 +109,7 @@ const projects = [
         videoId: "gC4SC8j58pI",
         platform: "youtube",
         channelName: "República Coisa de Nerd",
-        viewCount: "5.1M views",
+        viewCount: "5.2M views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=gC4SC8j58pI",
         previewVideo: "videos/previews/gC4SC8j58pI.mp4",
@@ -187,7 +187,7 @@ const projects = [
         videoId: "mnO5bES3eQY",
         platform: "youtube",
         channelName: "Team Liquid Visa: Valorant BR",
-        viewCount: "363K views",
+        viewCount: "364K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=mnO5bES3eQY",
         previewVideo: "videos/previews/mnO5bES3eQY.mp4"
@@ -344,7 +344,7 @@ const featured = [
       "videoId": "DW3F1OHfZeo",
       "platform": "youtube",
       "channelName": "Team Liquid League of Legends",
-      "viewCount": "471K views",
+      "viewCount": "473K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=DW3F1OHfZeo",
       "previewVideo": "videos/previews/DW3F1OHfZeo.mp4",
