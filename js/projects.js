@@ -5,10 +5,10 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-06-10 07:26
+ * Last updated: 2026-06-11 07:32
  */
 
-const totalYouTubeViews = 433533891;
+const totalYouTubeViews = 433554892;
 const totalYouTubeVideos = 577;
 const totalVideos = 721;
 
@@ -344,7 +344,7 @@ const featured = [
       "videoId": "DW3F1OHfZeo",
       "platform": "youtube",
       "channelName": "Team Liquid League of Legends",
-      "viewCount": "477K views",
+      "viewCount": "478K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=DW3F1OHfZeo",
       "previewVideo": "videos/previews/DW3F1OHfZeo.mp4",
