@@ -2,6 +2,7 @@
 
 import json
 import logging
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import gspread
@@ -49,8 +50,81 @@ def is_stale(last_updated: str, max_age_days: int) -> bool:
 
 
 def _text(value) -> str:
-    """Prefix with apostrophe to force Google Sheets to treat as text, not number/date/time."""
+    """Prefix with apostrophe to force Google Sheets to treat as text, not number/date/time.
+
+    Used for Video ID only: we want the literal id preserved (leading-zero safe),
+    never coerced into a number. Duration and Published deliberately do NOT use
+    this, so the column's TIME / DATE format can render them (see _duration_cell /
+    _date_cell).
+    """
     return f"'{value}" if value else ""
+
+
+def _duration_cell(value) -> str:
+    """Duration as an HH:MM:SS string that USER_ENTERED parses into a real time
+    value, so the column's TIME format ([>=0.0416667]h:mm:ss;mm:ss) renders it
+    consistently. Returns "" for unknown/zero durations (photos/carousels) so the
+    cell stays blank instead of showing a fake 00:00.
+
+    The platform clients already emit HH:MM:SS, which is unambiguous to Sheets
+    (a 2-part MM:SS like "1:02" would be misread as 1h02m, so we keep 3 parts)."""
+    v = str(value or "").strip().lstrip("'")
+    if not v or v == "00:00:00":
+        return ""
+    return v
+
+
+def _date_cell(value) -> str:
+    """Published date as a DD/MM/YYYY string that USER_ENTERED parses into a real
+    date under the sheets' pt_BR locale, so the column's dd/MM/yyyy format renders
+    it. Accepts ISO YYYY-MM-DD (what the clients emit) or an already-DD/MM/YYYY
+    string; returns "" when unknown. Writing in the sheet locale avoids the
+    day/month ambiguity that a bare ISO string can hit on some locales."""
+    v = str(value or "").strip().lstrip("'")
+    if not v:
+        return ""
+    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", v)
+    if m:
+        return f"{m.group(3)}/{m.group(2)}/{m.group(1)}"
+    return v
+
+
+def extract_video_id_generic(url: str) -> Optional[str]:
+    """Canonical platform-agnostic video/post id for duplicate detection.
+
+    Mirrors the per-platform extractors so the dedup guard can key on the same id
+    the site (sync_from_sheet.py) dedupes by, regardless of URL variant
+    (watch?v= vs youtu.be vs ?feature=share, /reel/ vs /p/, etc.)."""
+    if not url:
+        return None
+    patterns = [
+        r"(?:v=|/v/|youtu\.be/|/embed/|/shorts/)([A-Za-z0-9_-]{11})",  # YouTube
+        r"/(?:reel|reels|p)/([A-Za-z0-9_-]+)",                         # Instagram
+        r"/video/(\d+)",                                               # TikTok
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    return None
+
+
+def find_duplicate_rows(rows: list[dict], extract_id=extract_video_id_generic) -> dict:
+    """Map row_num -> the video id it duplicates, for every row that is NOT the
+    first occurrence of its id. Keeps the first occurrence; later rows with the
+    same id are flagged. Used by the populate guard to avoid (re)populating a
+    duplicate of a video that already lives in another row."""
+    first_seen = {}
+    dups = {}
+    for r in rows:
+        vid = extract_id(r["url"])
+        if not vid:
+            continue
+        if vid in first_seen:
+            dups[r["row_num"]] = vid
+        else:
+            first_seen[vid] = r["row_num"]
+    return dups
 
 
 class SheetsClient:
@@ -96,21 +170,49 @@ class SheetsClient:
             logger.info("Updated headers")
 
     def get_all_rows(self) -> list[dict]:
-        """Get all rows with their URLs, row numbers, and "Last Updated" stamps."""
+        """Get all rows with their URLs, row numbers, ids, and "Last Updated" stamps.
+
+        `has_data` is True when the Video ID cell is filled. `incomplete` is True
+        when the row has a Video ID but Title AND Channel are both blank, i.e. it
+        was never successfully populated (a successful fetch always sets at least
+        the channel). The populate pass treats incomplete rows as work to do so a
+        half-filled row can self-heal, instead of being skipped forever because it
+        already has an id.
+        """
         all_values = self.worksheet.get_all_values()
         last_col_idx = len(self.headers) - 1  # "Last Updated" is always the final column
+
+        def hidx(name):
+            try:
+                return self.headers.index(name)
+            except ValueError:
+                return None
+
+        title_idx = hidx("Title")
+        channel_idx = hidx("Channel")
 
         rows = []
         for idx, row in enumerate(all_values[1:], start=2):  # Skip header, rows start at 2
             url = row[0] if row else ""
-            if url.strip():
-                last_updated = row[last_col_idx].strip() if len(row) > last_col_idx else ""
-                rows.append({
-                    "row_num": idx,
-                    "url": url.strip(),
-                    "has_data": len(row) > 1 and row[1].strip() != "",  # Check if Video ID exists
-                    "last_updated": last_updated,
-                })
+            if not url.strip():
+                continue
+
+            def cell(i):
+                return row[i].strip() if (i is not None and i < len(row)) else ""
+
+            video_id = cell(1)  # Column B
+            has_data = video_id != ""
+            title = cell(title_idx)
+            channel = cell(channel_idx)
+            last_updated = row[last_col_idx].strip() if len(row) > last_col_idx else ""
+            rows.append({
+                "row_num": idx,
+                "url": url.strip(),
+                "video_id": video_id,
+                "has_data": has_data,
+                "incomplete": has_data and not title and not channel,
+                "last_updated": last_updated,
+            })
 
         return rows
 
@@ -124,11 +226,11 @@ class SheetsClient:
                 _text(video_data.get("video_id", "")),
                 video_data.get("title", ""),
                 video_data.get("channel", ""),
-                _text(video_data.get("duration", "")),
+                _duration_cell(video_data.get("duration", "")),
                 video_data.get("views", 0),
                 video_data.get("likes", 0),
                 video_data.get("comments", 0),
-                _text(video_data.get("published", "")),
+                _date_cell(video_data.get("published", "")),
                 video_data.get("thumbnail", ""),
                 timestamp
             ]
@@ -139,10 +241,10 @@ class SheetsClient:
                 _text(video_data.get("video_id", "")),
                 video_data.get("title", ""),
                 video_data.get("channel", ""),
-                _text(video_data.get("duration", "")),
+                _duration_cell(video_data.get("duration", "")),
                 video_data.get("likes", 0),
                 video_data.get("comments", 0),
-                _text(video_data.get("published", "")),
+                _date_cell(video_data.get("published", "")),
                 video_data.get("thumbnail", ""),
                 timestamp
             ]
@@ -163,11 +265,11 @@ class SheetsClient:
                     _text(video_data.get("video_id", "")),
                     video_data.get("title", ""),
                     video_data.get("channel", ""),
-                    _text(video_data.get("duration", "")),
+                    _duration_cell(video_data.get("duration", "")),
                     video_data.get("views", 0),
                     video_data.get("likes", 0),
                     video_data.get("comments", 0),
-                    _text(video_data.get("published", "")),
+                    _date_cell(video_data.get("published", "")),
                     video_data.get("thumbnail", ""),
                     timestamp
                 ]
@@ -177,10 +279,10 @@ class SheetsClient:
                     _text(video_data.get("video_id", "")),
                     video_data.get("title", ""),
                     video_data.get("channel", ""),
-                    _text(video_data.get("duration", "")),
+                    _duration_cell(video_data.get("duration", "")),
                     video_data.get("likes", 0),
                     video_data.get("comments", 0),
-                    _text(video_data.get("published", "")),
+                    _date_cell(video_data.get("published", "")),
                     video_data.get("thumbnail", ""),
                     timestamp
                 ]

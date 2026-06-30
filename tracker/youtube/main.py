@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dotenv import load_dotenv
 from youtube_client import YouTubeClient
-from sheets_client import SheetsClient, WORKSHEETS
+from sheets_client import SheetsClient, WORKSHEETS, find_duplicate_rows
 
 logging.basicConfig(
     level=logging.INFO,
@@ -58,17 +58,28 @@ def populate_new_videos(youtube: YouTubeClient, sheets: SheetsClient):
         logger.info("No URLs to process. Add YouTube video URLs to column A.")
         return
 
-    # Filter to only new rows (no Video ID yet)
-    new_rows = [r for r in rows if not r["has_data"]]
-    logger.info(f"Found {len(new_rows)} new URLs to populate (skipping {len(rows) - len(new_rows)} existing)")
+    # Targets: brand-new rows (no Video ID) AND half-filled rows (have an id but
+    # never got metadata) so a stalled row can self-heal instead of being skipped
+    # forever. Duplicate-id rows are dropped (keep first occurrence) and flagged.
+    dup_rows = find_duplicate_rows(rows, youtube.extract_video_id)
+    targets = [r for r in rows if (not r["has_data"]) or r.get("incomplete")]
+    skipped_dups = [r for r in targets if r["row_num"] in dup_rows]
+    for r in skipped_dups:
+        logger.warning(f"Row {r['row_num']}: duplicate video id '{dup_rows[r['row_num']]}' "
+                       f"already in sheet ({r['url']}); skipping populate")
+    targets = [r for r in targets if r["row_num"] not in dup_rows]
+    new_count = sum(1 for r in targets if not r["has_data"])
+    heal_count = len(targets) - new_count
+    logger.info(f"Found {len(targets)} URLs to populate ({new_count} new, {heal_count} incomplete); "
+                f"skipped {len(skipped_dups)} duplicates")
 
-    if not new_rows:
+    if not targets:
         logger.info("All videos already have data. Nothing to populate.")
         return
 
     # Extract video IDs from URLs
     url_to_row = {}
-    for row in new_rows:
+    for row in targets:
         video_id = youtube.extract_video_id(row["url"])
         if video_id:
             url_to_row[video_id] = (row["row_num"], row["url"])
@@ -83,6 +94,12 @@ def populate_new_videos(youtube: YouTubeClient, sheets: SheetsClient):
     video_ids = list(url_to_row.keys())
     logger.info(f"Fetching data for {len(video_ids)} videos...")
     video_data = youtube.get_video_details(video_ids)
+
+    if len(video_ids) >= 3 and not video_data:
+        msg = "YouTube: all %d metadata fetches returned nothing - check YOUTUBE_API_KEY / quota." % len(video_ids)
+        logger.error(msg)
+        print(f"::error::{msg}")
+        sys.exit(1)
 
     # Update sheet rows
     updates = []
@@ -126,6 +143,12 @@ def refresh_stats(youtube: YouTubeClient, sheets: SheetsClient):
     video_ids = list(url_to_row.keys())
     logger.info(f"Fetching stats for {len(video_ids)} videos...")
     video_data = youtube.get_video_stats(video_ids)
+
+    if len(video_ids) >= 3 and not video_data:
+        msg = "YouTube: all %d stat fetches returned nothing - check YOUTUBE_API_KEY / quota." % len(video_ids)
+        logger.error(msg)
+        print(f"::error::{msg}")
+        sys.exit(1)
 
     # Update only stats columns
     updates = []

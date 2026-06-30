@@ -116,14 +116,20 @@ def parse_duration(s):
 
 
 def parse_published(s):
-    """Parse 'DD/MM/YYYY' Brazilian format into ISO 'YYYY-MM-DD'."""
+    """Parse a published date into ISO 'YYYY-MM-DD'.
+
+    Accepts the sheet's Brazilian 'DD/MM/YYYY' (what the column renders) and a
+    bare ISO 'YYYY-MM-DD' (in case a cell still holds ISO text), so neither shape
+    silently becomes a null published date in library.json."""
     if not s:
         return None
     s = str(s).strip()
-    try:
-        return datetime.strptime(s, "%d/%m/%Y").strftime("%Y-%m-%d")
-    except ValueError:
-        return None
+    for fmt in ("%d/%m/%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(s, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+    return None
 
 
 def extract_video_id(url, platform):
