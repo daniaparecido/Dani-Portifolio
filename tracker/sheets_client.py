@@ -163,9 +163,13 @@ class SheetsClient:
         return worksheet
 
     def ensure_headers(self):
-        """Ensure the worksheet has correct headers."""
+        """Ensure the worksheet has correct headers.
+
+        Compares only the known A:.. prefix so extra helper columns to the right
+        (e.g. the in-sheet "Extracted ID" / "Dup?" duplicate-detection columns)
+        don't trigger a needless A1 rewrite on every run."""
         current_headers = self.worksheet.row_values(1)
-        if current_headers != self.headers:
+        if current_headers[:len(self.headers)] != self.headers:
             self.worksheet.update("A1", [self.headers])
             logger.info("Updated headers")
 
