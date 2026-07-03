@@ -5,7 +5,7 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-07-02 21:36
+ * Last updated: 2026-07-02 21:37
  */
 
 const totalYouTubeViews = 434162906;
@@ -66,7 +66,7 @@ const projects = [
         viewCount: "26K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=ATH4PvNxWNA",
-        previewVideo: ""
+        previewVideo: "videos/previews/ATH4PvNxWNA.mp4"
     },
     {
         title: "FRTTT vs 5 NOOBS! - Desafio IMPOSSÍVEL no Valorant",
@@ -335,7 +335,7 @@ const featured = [
       "viewCount": "83K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=D0tZ5NaRobM",
-      "previewVideo": "",
+      "previewVideo": "videos/previews/D0tZ5NaRobM.mp4",
       "localSource": false
     },
     "shortForm": []
@@ -387,8 +387,8 @@ const featured = [
         "viewCount": "6K views",
         "thumbnail": "",
         "url": "https://youtube.com/shorts/i9px6iapZd4?si=mxl76sdsSHJDBXZ-",
-        "previewVideo": "",
-        "localSource": false
+        "previewVideo": "videos/previews/i9px6iapZd4.mp4",
+        "localSource": true
       }
     ]
   }
