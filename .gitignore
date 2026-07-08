@@ -83,3 +83,6 @@ scripts/inspect_sheets.py
 # Working files / drafts
 draft.psd
 .tmp/
+
+# Confidential client reference (micro1 / Titan Obsidian NDA) - NEVER commit or deploy
+Event Detection Cheat Sheet.html

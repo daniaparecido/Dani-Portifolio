@@ -5,12 +5,12 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-07-07 08:42
+ * Last updated: 2026-07-07 23:03
  */
 
-const totalYouTubeViews = 434417909;
-const totalYouTubeVideos = 580;
-const totalVideos = 724;
+const totalYouTubeViews = 434424909;
+const totalYouTubeVideos = 581;
+const totalVideos = 725;
 
 const projects = [
     {
@@ -338,7 +338,20 @@ const featured = [
       "previewVideo": "videos/previews/D0tZ5NaRobM.mp4",
       "localSource": false
     },
-    "shortForm": []
+    "shortForm": [
+      {
+        "title": "Who knows League the best? #leagueoflegends",
+        "category": "short-form",
+        "videoId": "de-cT8ZLQzs",
+        "platform": "youtube",
+        "channelName": "Team Liquid League of Legends",
+        "viewCount": "7K views",
+        "thumbnail": "",
+        "url": "https://www.youtube.com/shorts/de-cT8ZLQzs",
+        "previewVideo": "",
+        "localSource": false
+      }
+    ]
   },
   {
     "longForm": {
