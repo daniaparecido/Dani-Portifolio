@@ -5,10 +5,10 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-07-09 08:51
+ * Last updated: 2026-07-10 08:45
  */
 
-const totalYouTubeViews = 434587910;
+const totalYouTubeViews = 434618910;
 const totalYouTubeVideos = 581;
 const totalVideos = 725;
 
@@ -63,7 +63,7 @@ const projects = [
         videoId: "ATH4PvNxWNA",
         platform: "youtube",
         channelName: "Team Liquid League of Legends",
-        viewCount: "68K views",
+        viewCount: "69K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=ATH4PvNxWNA",
         previewVideo: "videos/previews/ATH4PvNxWNA.mp4"
@@ -292,7 +292,7 @@ const featured = [
       "videoId": "DW3F1OHfZeo",
       "platform": "youtube",
       "channelName": "Team Liquid League of Legends",
-      "viewCount": "495K views",
+      "viewCount": "496K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=DW3F1OHfZeo",
       "previewVideo": "videos/previews/DW3F1OHfZeo.mp4",
@@ -332,7 +332,7 @@ const featured = [
       "videoId": "D0tZ5NaRobM",
       "platform": "youtube",
       "channelName": "Team Liquid League of Legends",
-      "viewCount": "91K views",
+      "viewCount": "92K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=D0tZ5NaRobM",
       "previewVideo": "videos/previews/D0tZ5NaRobM.mp4",
@@ -345,7 +345,7 @@ const featured = [
         "videoId": "de-cT8ZLQzs",
         "platform": "youtube",
         "channelName": "Team Liquid League of Legends",
-        "viewCount": "16K views",
+        "viewCount": "23K views",
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/de-cT8ZLQzs",
         "previewVideo": "videos/previews/de-cT8ZLQzs.mp4",
