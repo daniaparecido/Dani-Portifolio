@@ -5,10 +5,10 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-07-23 08:04
+ * Last updated: 2026-07-24 07:57
  */
 
-const totalYouTubeViews = 435226915;
+const totalYouTubeViews = 435264915;
 const totalYouTubeVideos = 585;
 const totalVideos = 729;
 
@@ -63,7 +63,7 @@ const projects = [
         videoId: "ATH4PvNxWNA",
         platform: "youtube",
         channelName: "Team Liquid League of Legends",
-        viewCount: "78K views",
+        viewCount: "79K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=ATH4PvNxWNA",
         previewVideo: "videos/previews/ATH4PvNxWNA.mp4"
@@ -140,7 +140,7 @@ const projects = [
         videoId: "C1ivkljLWAw",
         platform: "youtube",
         channelName: "umdois",
-        viewCount: "218K views",
+        viewCount: "219K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=C1ivkljLWAw",
         previewVideo: "videos/previews/C1ivkljLWAw.mp4"
@@ -292,7 +292,7 @@ const featured = [
       "videoId": "DW3F1OHfZeo",
       "platform": "youtube",
       "channelName": "Team Liquid League of Legends",
-      "viewCount": "512K views",
+      "viewCount": "515K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=DW3F1OHfZeo",
       "previewVideo": "videos/previews/DW3F1OHfZeo.mp4",
@@ -332,7 +332,7 @@ const featured = [
       "videoId": "D0tZ5NaRobM",
       "platform": "youtube",
       "channelName": "Team Liquid League of Legends",
-      "viewCount": "103K views",
+      "viewCount": "104K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=D0tZ5NaRobM",
       "previewVideo": "videos/previews/D0tZ5NaRobM.mp4",
@@ -345,7 +345,7 @@ const featured = [
         "videoId": "de-cT8ZLQzs",
         "platform": "youtube",
         "channelName": "Team Liquid League of Legends",
-        "viewCount": "34K views",
+        "viewCount": "35K views",
         "thumbnail": "",
         "url": "https://www.youtube.com/shorts/de-cT8ZLQzs",
         "previewVideo": "videos/previews/de-cT8ZLQzs.mp4",
