@@ -5,10 +5,10 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-08-05 08:15
+ * Last updated: 2026-08-06 08:15
  */
 
-const totalYouTubeViews = 435778919;
+const totalYouTubeViews = 435795919;
 const totalYouTubeVideos = 585;
 const totalVideos = 729;
 
