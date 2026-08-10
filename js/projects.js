@@ -5,10 +5,10 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-08-09 06:33
+ * Last updated: 2026-08-10 07:11
  */
 
-const totalYouTubeViews = 435852920;
+const totalYouTubeViews = 435877922;
 const totalYouTubeVideos = 585;
 const totalVideos = 729;
 
@@ -41,7 +41,7 @@ const projects = [
         videoId: "WOGQI0PAjEU",
         platform: "youtube",
         channelName: "República Coisa de Nerd",
-        viewCount: "261K views",
+        viewCount: "262K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=WOGQI0PAjEU",
         previewVideo: "videos/previews/WOGQI0PAjEU.mp4"
