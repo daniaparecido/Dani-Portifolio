@@ -5,10 +5,10 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-08-16 06:21
+ * Last updated: 2026-08-17 06:34
  */
 
-const totalYouTubeViews = 436023926;
+const totalYouTubeViews = 436045929;
 const totalYouTubeVideos = 585;
 const totalVideos = 729;
 
@@ -107,7 +107,7 @@ const projects = [
         videoId: "EcOX5FeP2w4",
         platform: "youtube",
         channelName: "Team Liquid Visa: Valorant BR",
-        viewCount: "252K views",
+        viewCount: "253K views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=EcOX5FeP2w4",
         previewVideo: "videos/previews/EcOX5FeP2w4.mp4"
@@ -292,7 +292,7 @@ const featured = [
       "videoId": "DW3F1OHfZeo",
       "platform": "youtube",
       "channelName": "Team Liquid League of Legends",
-      "viewCount": "537K views",
+      "viewCount": "538K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=DW3F1OHfZeo",
       "previewVideo": "videos/previews/DW3F1OHfZeo.mp4",
