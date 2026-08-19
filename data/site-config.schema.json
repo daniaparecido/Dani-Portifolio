@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://daniaparecido.github.io/Dani-Portifolio/data/site-config.schema.json",
-  "title": "Dani Portfolio site config",
+  "$id": "https://daniaparecido.github.io/danis-office/data/site-config.schema.json",
+  "title": "Dani's Office site config",
   "description": "Curation layer driving the live portfolio. Every videoId here must exist in data/library.json. Edited via the visual editor (editor.html), consumed by the front-end and by scripts/sync_from_sheet.py.",
   "type": "object",
   "required": ["version", "featured", "sections"],
