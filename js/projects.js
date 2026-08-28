@@ -5,10 +5,10 @@
  *
  * Source: data/library.json (full library) filtered by data/site-config.json.
  * To regenerate, run: python scripts/sync_from_sheet.py
- * Last updated: 2026-08-27 16:22
+ * Last updated: 2026-08-28 17:35
  */
 
-const totalYouTubeViews = 436303933;
+const totalYouTubeViews = 436578935;
 const totalYouTubeVideos = 586;
 const totalVideos = 730;
 
@@ -241,7 +241,7 @@ const projects = [
         videoId: "gC4SC8j58pI",
         platform: "youtube",
         channelName: "República Coisa de Nerd",
-        viewCount: "5.3M views",
+        viewCount: "5.4M views",
         thumbnail: "",
         url: "https://www.youtube.com/watch?v=gC4SC8j58pI",
         previewVideo: "videos/previews/gC4SC8j58pI.mp4",
@@ -292,7 +292,7 @@ const featured = [
       "videoId": "DW3F1OHfZeo",
       "platform": "youtube",
       "channelName": "Team Liquid League of Legends",
-      "viewCount": "548K views",
+      "viewCount": "558K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=DW3F1OHfZeo",
       "previewVideo": "videos/previews/DW3F1OHfZeo.mp4",
@@ -332,7 +332,7 @@ const featured = [
       "videoId": "D0tZ5NaRobM",
       "platform": "youtube",
       "channelName": "Team Liquid League of Legends",
-      "viewCount": "125K views",
+      "viewCount": "129K views",
       "thumbnail": "",
       "url": "https://www.youtube.com/watch?v=D0tZ5NaRobM",
       "previewVideo": "videos/previews/D0tZ5NaRobM.mp4",
